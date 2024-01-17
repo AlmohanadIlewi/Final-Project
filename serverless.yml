@@ -10,5 +10,9 @@ provider:
 
 
 functions:
-  hello:
-    handler: src/handler.hello
+  trigger:
+    handler: src/handler
+    events:
+      - http:
+          path: hello
+          method: get

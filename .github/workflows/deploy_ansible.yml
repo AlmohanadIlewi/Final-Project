@@ -1,4 +1,4 @@
-name: deploy ansible
+name: Deploy Ansible
 
 on:
   push:

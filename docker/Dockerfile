@@ -18,9 +18,3 @@ COPY --from=build /app/Frontend/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-
-FROM  <DockerHub-UserName>/ansible-in-containers
-
-COPY ./entrypoint.sh /entrypoint.sh
-
-ENTRYPOINT ["bash","/entrypoint.sh"]
