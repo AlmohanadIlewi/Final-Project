@@ -1,31 +1,49 @@
 name: Backend Lambda Deploy
-run-name: Build and Deploy Lambda by 🚀 ${{ github.actor }}
-on: [push]
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-      Deploy-App:
-        runs-on: ubuntu-latest
-        steps:
-          - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-          - name: Check out repository code
-            uses: actions/checkout@v4
-          - name: List files in the repository
-            run: |
-              ls ${{ github.workspace }}
-          # Wir installieren die dependencies (terraform, aws)
-          - id: install-aws-cli
-            uses: unfor19/install-aws-cli-action@v1
-          - name: Check if aws cli is installed
-            run: |
-              aws --version
-          - name : install terraform 
-            uses: hashicorp/setup-terraform@v2
-          - run: terraform version
-          # Konfiguriere die AWS CLI
-          - run: mkdir -p ~/.aws/
-          - run: echo "$super_secret" > ~/.aws/credentials
-            env: # Erstelle ein Github Secret AWS_CONFIG!
-              super_secret: ${{ secrets.AWS_CONFIG }}
-          - run: cat ~/.aws/credentials
-          - run: aws configure list-profiles
-          - run: aws s3 ls --region eu-central-1 --profile techstarter
-        
+  deploy-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Check if AWS CLI is installed
+        run: aws --version
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "0.15.5"
+
+      - name: Display Terraform version
+        run: terraform version
+
+      - name: Configure AWS CLI
+        run: |
+          mkdir -p ~/.aws/
+          echo "$super_secret" > ~/.aws/credentials
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG }}
+
+      - name: Display AWS CLI credentials
+        run: cat ~/.aws/credentials
+
+      - name: List AWS CLI profiles
+        run: aws configure list-profiles
+
+      - name: List S3 buckets in eu-central-1 region using techstarter profile
+        run: aws s3 ls --region eu-central-1 --profile techstarter
+
