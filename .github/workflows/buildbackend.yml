@@ -47,14 +47,3 @@ jobs:
       - name: List S3 buckets in eu-central-1 region using techstarter profile
         run: aws s3 ls --region eu-central-1 --profile techstarter
 
-      - name: Deploy Ansible
-        runs-on: ubuntu-latest
-        steps:
-          - name: Checkout Repository
-            uses: actions/checkout@v2
-
-          - name: Ansible Playbook
-            uses: ./.github/actions/ansible
-            with:
-              playbook: docker/playbook.yml
-              inventory: localhost

@@ -1,21 +1,21 @@
-# name: Deploy Ansible
+name: Deploy Ansible
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repo
-#         uses: actions/checkout@v2
-#       - name: Ansible Playbook
-#         uses: ./.github/actions/ansible
-#         with:
-#           playbook: docker/playbook.yml
-#           inventory: localhost
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Ansible Playbook
+        uses: ./.github/actions/ansible
+        with:
+          playbook: docker/playbook.yml
+          inventory: localhost
