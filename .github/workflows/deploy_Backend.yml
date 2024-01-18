@@ -1,0 +1,21 @@
+name: Backend  Deploy
+run-name: Build and Deploy Backend teil  by 🚀 ${{ github.actor }}
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Backend Folder
+        run: |
+          mkdir backend
+          echo "Backend folder created successfully2"
+
+      - name: Checkout Additional Repository
+        run: |
+          git clone https://${{ secrets.ACCESS_TOKEN }}@github.com/BastiWho/Abschlussprojekt_Backend.git backend
+
+      - name: Verify Additional Repository
+        run: echo "Additional repository checked out successfully"
