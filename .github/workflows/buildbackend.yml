@@ -1,80 +1,60 @@
-# Gibt dem Workflow einen Namen, der in der GitHub Actions-Oberfläche angezeigt wird.
 name: Backend Lambda Deploy
 
-# Definiert die Ereignisse, die den Workflow auslösen. Hier wird der Workflow bei Push-Events auf dem main-Branch gestartet.
 on:
   push:
     branches:
       - main
 
-# Definiert einen Job mit dem Namen "deploy-app", der auf einem Ubuntu-Latest-Laufsystem ausgeführt wird.
-
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
-    
-      # Überprüft den Code des Repositories mithilfe der GitHub Actions-Aktion "actions/checkout@v4".
+
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v4
-      
-      # Listet die Dateien im Repository-Verzeichnis auf.
+
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
-      
-      # Installiert die AWS Command Line Interface (CLI) mit einer benutzerdefinierten Aktion.
+
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1
-      
-                # Überprüft, ob die AWS CLI erfolgreich installiert wurde, indem die Befehlszeile "aws --version" ausgeführt wird.
 
       - name: Check if AWS CLI is installed
         run: aws --version
-      
-      # Installiert Terraform mit einer benutzerdefinierten Aktion und gibt die Terraform-Version an.
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: "0.15.5"
-      
-# Zeigt die installierte Terraform-Version an.
+
       - name: Display Terraform version
         run: terraform version
-# Konfiguriert die AWS CLI und setzt AWS-Zugangsdaten.
+
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
-    
-# Zeigt die konfigurierten AWS CLI-Zugangsdaten an.
+
       - name: Display AWS CLI credentials
         run: cat ~/.aws/credentials
-      
-# Listet die konfigurierten AWS CLI-Profile auf.
+
       - name: List AWS CLI profiles
         run: aws configure list-profiles
-      
-# Listet S3-Buckets in der Region "eu-central-1" unter Verwendung des AWS CLI-Profils "techstarter" auf.
+
       - name: List S3 buckets in eu-central-1 region using techstarter profile
         run: aws s3 ls --region eu-central-1 --profile techstarter
-      
-# Überprüft den Code des Repositories erneut.
 
       - name: Deploy Ansible
         runs-on: ubuntu-latest
         steps:
           - name: Checkout Repository
             uses: actions/checkout@v2
-          
-# Führt ein benutzerdefiniertes Ansible-Playbook aus.
 
           - name: Ansible Playbook
             uses: ./.github/actions/ansible
             with:
               playbook: docker/playbook.yml
               inventory: localhost
-          
