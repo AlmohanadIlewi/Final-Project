@@ -17,5 +17,5 @@ jobs:
     - name: Ansible Playbook
       uses: ./.github/actions/ansible
       with:
-        playbook: playbook.yml
+        playbook: Final-Project/docker\playbook.yml
         inventory: localhost
