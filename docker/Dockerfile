@@ -1,20 +1,26 @@
-FROM node:16-alpine AS build
+# Abschlussprojekt AWS 23-02
+# Erstellung des Container-Images für das Frontend
+# © 2024 Markus Rennings
 
-RUN apk --no-cache add git \
-    && mkdir /app
+FROM node:alpine as build
 
-WORKDIR /app
+RUN <<EOF
+apk add git
+git clone https://github.com/ChriZZ2406/Abschlussprojekt-Front-Backend Frontend
+cd  Frontend
+npm ci
+npm run build
+EOF
 
-RUN git clone https://github.com/ChriZZ2406/Abschlussprojekt-Front-Backend Frontend \
-    && cd Frontend \
-    && npm install \
-    && npm ci \
-    && npm run build
 
-# Stage 2: Final Image
 FROM nginx:alpine
+# per default läuft nginx rootless
+# / # ps axu
+# PID   USER     TIME  COMMAND
+#   1   root     0:00  nginx: master process nginx -g daemon off;
+#  30   nginx    0:00  nginx: worker process
 
-COPY --from=build /app/Frontend/dist /usr/share/nginx/html
+
+COPY --from=build /Frontend/dist /usr/share/nginx/html
 
 EXPOSE 80
-
