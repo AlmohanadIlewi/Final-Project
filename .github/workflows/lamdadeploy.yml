@@ -12,11 +12,9 @@ jobs:
     steps:
       - name: Configure AWS CLI (Build)
         run: |
-          # Erstelle das Verzeichnis und speichere die AWS-Zugangsdaten
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
         env: 
-          # Erstelle ein Github Secret AWS_CONFIG!
           super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Show AWS credentials (Build)
@@ -41,7 +39,6 @@ jobs:
         id: list-functions
         run: |
           cd ${{ github.workspace }}
-          # Speichere die Lambda-Funktionen in einer Ausgabedatei (Terraform-Format)
           echo "LAMBDA_TF=$(bash ./.github/scripts/lsdirs.sh)" >> $GITHUB_ENV
           echo "LAMBDI.JSON FILE Created:"
           cat lambdi.json
@@ -55,19 +52,18 @@ jobs:
 
       - name: Configure AWS CLI for Deploy (Deploy Preparation)
         run: |
-          # Erstelle das Verzeichnis und speichere die AWS-Zugangsdaten erneut
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
-      # Job: Deploy-Lambdas (Deploy)
-      Deploy-Lambdas:
-        runs-on: ubuntu-latest
-        needs: Lambda-Code
-        steps:
-          - name: Deploy Lambdi.json to S3 (Deploy)
-            run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
+  # Job: Deploy-Lambdas (Deploy)
+  Deploy-Lambdas:
+    runs-on: ubuntu-latest
+    needs: Lambda-Code
+    steps:
+      - name: Deploy Lambdi.json to S3 (Deploy)
+        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
 
   # Job: Build-and-Zip-Lambdas (Build + Deploy)
   Build-and-Zip-Lambdas:
