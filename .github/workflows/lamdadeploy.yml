@@ -26,6 +26,10 @@ jobs:
       - name: List S3 buckets (Build)
         run: aws s3 ls --region eu-central-1 --profile techstarter
 
+    # Hier füge den neuen Schritt hinzu, um die AWS CLI-Version anzuzeigen
+      - name: Show AWS CLI version
+        run: aws --version
+
   # Job: Lambda-Code (Build + Deploy Preparation)
   Lambda-Code:
     runs-on: ubuntu-latest
@@ -62,9 +66,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: Lambda-Code
     steps:
-      - name: Deploy Lambdi.json to S3 (Deploy)
-        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
-
+      - name: Run AWS S3 CP command
+        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json     
   # Job: Build-and-Zip-Lambdas (Build + Deploy)
   Build-and-Zip-Lambdas:
     needs: Deploy-Lambdas
