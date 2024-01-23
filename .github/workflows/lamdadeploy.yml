@@ -5,16 +5,8 @@ on:
     branches:
       - test-field
 
-env:
-  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
-  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN || 'default' }}
-  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY || 'default' }}
-  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY || 'default' }}
-  AWS_ENDPOINT_URL_SSO: ${{ secrets.AWS_ENDPOINT_URL_SSO || 'default' }}
-  AWS_PROFILE: ${{ secrets.AWS_PROFILE || 'techstarter' }}
-
 jobs:
-  example-job:
+  AWS_Job:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS CLI
@@ -32,6 +24,17 @@ jobs:
       
       - name: List S3 buckets
         run: aws s3 ls --region eu-central-1 --profile techstarter
+
+        env: # Erstelle ein Github Secret AWS_CONFIG!
+        super_secret: ${{ secrets.AWS_CONFIG }}
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  # AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
+  # AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN || 'default' }}
+  # AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY || 'default' }}
+  # AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY || 'default' }}
+  # AWS_ENDPOINT_URL_SSO: ${{ secrets.AWS_ENDPOINT_URL_SSO || 'default' }}
+  # AWS_PROFILE: ${{ secrets.AWS_PROFILE || 'techstarter' }}
+
 
   Lambda-Code-Or-Function:
     runs-on: ubuntu-latest
@@ -59,7 +62,8 @@ jobs:
       - name: Deploy Lambdi.json to S3
         run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
         env:
-          super_secret: ${{ secrets.AWS_CONFIG1 }}
+          super_secret: ${{ secrets.AWS_CONFIG }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         continue-on-error: true
 
   Build-and-Zip-Lambdas:
