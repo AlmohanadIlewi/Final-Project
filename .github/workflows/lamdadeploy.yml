@@ -15,7 +15,7 @@ jobs:
           echo "$super_secret" > ~/.aws/credentials
         env: # Erstelle ein Github Secret AWS_CONFIG!
             super_secret: ${{ secrets.AWS_CONFIG }}
-        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  
       
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
@@ -61,7 +61,7 @@ jobs:
         run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        
         continue-on-error: true
 
   Build-and-Zip-Lambdas:
