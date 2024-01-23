@@ -54,7 +54,7 @@ jobs:
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
 
       - name: Configure AWS CLI for Deploy (Deploy Preparation)
-        run: |         # Erstelle das Verzeichnis und speichere die AWS-Zugangsdaten erneut
+        run: |         
                       
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
