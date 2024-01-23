@@ -3,15 +3,7 @@ name: Backend Lambda Deploy S3
 on:
   push:
     branches:
-      - test-field
-
-env:
-  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
-  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN || 'default' }}
-  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY || 'default' }}
-  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY || 'default' }}
-  AWS_ENDPOINT_URL_SSO: ${{ vars.AWS_ENDPOINT_URL_SSO || 'default' }}
-  AWS_PROFILE: ${{ vars.AWS_PROFILE || 'techstarter' }}
+      - main
 
 jobs:
   example-job:
@@ -32,7 +24,7 @@ jobs:
       
             - name: List S3 buckets
               run: aws s3 ls --region eu-central-1 --profile techstarter
-
+      
   Lambda-Code-Or-Function:
     runs-on: ubuntu-latest
     outputs:
@@ -46,7 +38,6 @@ jobs:
         run: |
           cd ${{ github.workspace }}
           echo "LAMBDA_TF=$(bash ./.github/scripts/lsdirs.sh)" >> $GITHUB_OUTPUT
-          
           echo "LAMBDI.JSON FILE Created:"
           cat lambdi.json
 
@@ -58,14 +49,16 @@ jobs:
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # trigger Matrix-Job Build-and-Zip-Lambdas
       - name: Deploy Lambdi.json to S3
-        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
-          
+        run: aws s3 cp lambdi.json s3://tf-backend-abschlussprojekt/lambdi.json
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG1 }}
+
+        continue-on-error: true
   Build-and-Zip-Lambdas2:
     needs: Lambda-Code-Or-Function
     strategy:
       matrix:
-      
-      lambda_function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda_function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
         
     runs-on: ubuntu-latest
     steps:
@@ -86,9 +79,13 @@ jobs:
           path: ${{ github.workspace }}/${{ matrix.lambda_function }}
           key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
       - name: install node_modules
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
         working-directory: ${{ matrix.lambda_function }}
-        run: npm ci  
+        continue-on-error: true
+        run: |
+            npm install
+            npm ci
+        
       - name: Cache function-zips 
         id: cache-function-zips
         uses: actions/cache@v4
@@ -104,11 +101,3 @@ jobs:
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
       - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy
         run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
-
-
-      # - name: Clear Cache
-      #   run: |
-      #     git rm -r --cached .
-      #     git add .
-      #     git commit -m "Clear cache"
-
