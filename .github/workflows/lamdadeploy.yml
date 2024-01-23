@@ -1,3 +1,4 @@
+
 name: Backend Lambda Deploy S3
 
 on:
@@ -9,8 +10,6 @@ jobs:
   # Job: AWS_Job (AWS Configuration)
   AWS_Job:
     runs-on: ubuntu-latest
-    env:
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
     steps:
       - name: Configure AWS CLI (Build)
         run: |
@@ -27,10 +26,6 @@ jobs:
 
       - name: List S3 buckets (Build)
         run: aws s3 ls --region eu-central-1 --profile techstarter
-
-      - name: Show AWS CLI version
-        run: aws --version
-
 
   # Job: Lambda-Code (Build + Deploy Preparation)
   Lambda-Code:
@@ -68,8 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: Lambda-Code
     steps:
-      - name: Run AWS S3 CP command
-        run: aws s3 cp lambdi.json s3://tf-backend-abschlussprojekt/lambdi.json     
+      - name: Deploy Lambdi.json to S3 (Deploy)
+        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
+
   # Job: Build-and-Zip-Lambdas (Build + Deploy)
   Build-and-Zip-Lambdas:
     needs: Deploy-Lambdas
@@ -126,3 +122,53 @@ jobs:
       
       - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy (Deploy)
         run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
