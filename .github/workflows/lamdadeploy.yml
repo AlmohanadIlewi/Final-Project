@@ -13,8 +13,9 @@ jobs:
         run: |
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG1 }}
+        env: # Erstelle ein Github Secret AWS_CONFIG!
+            super_secret: ${{ secrets.AWS_CONFIG }}
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
       
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
@@ -24,10 +25,7 @@ jobs:
       
       - name: List S3 buckets
         run: aws s3 ls --region eu-central-1 --profile techstarter
-
-        env: # Erstelle ein Github Secret AWS_CONFIG!
-        super_secret: ${{ secrets.AWS_CONFIG }}
-        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      
   # AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
   # AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN || 'default' }}
   # AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY || 'default' }}
