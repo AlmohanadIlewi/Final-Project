@@ -9,6 +9,8 @@ jobs:
   # Job: AWS_Job (AWS Configuration)
   AWS_Job:
     runs-on: ubuntu-latest
+    env:
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
     steps:
       - name: Configure AWS CLI (Build)
         run: |
@@ -26,9 +28,9 @@ jobs:
       - name: List S3 buckets (Build)
         run: aws s3 ls --region eu-central-1 --profile techstarter
 
-    # Hier füge den neuen Schritt hinzu, um die AWS CLI-Version anzuzeigen
       - name: Show AWS CLI version
         run: aws --version
+
 
   # Job: Lambda-Code (Build + Deploy Preparation)
   Lambda-Code:
