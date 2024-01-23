@@ -67,7 +67,7 @@ jobs:
     needs: Lambda-Code
     steps:
       - name: Run AWS S3 CP command
-        run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json     
+        run: aws s3 cp lambdi.json s3://tf-backend-abschlussprojekt/lambdi.json     
   # Job: Build-and-Zip-Lambdas (Build + Deploy)
   Build-and-Zip-Lambdas:
     needs: Deploy-Lambdas
