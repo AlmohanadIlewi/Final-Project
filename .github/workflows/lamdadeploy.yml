@@ -79,11 +79,16 @@ jobs:
       - name: Display result
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
+        - name: Show AWS Config
+          run: aws configure list
+
       - name: Upload function zip to S3
         run: |
-          aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
-        # env:
-        #   super_secret: ${{ secrets.AWS_CONFIG }}
+          aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile default
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 
 Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
