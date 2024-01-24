@@ -69,7 +69,7 @@ jobs:
         run: |
             npm install
             npm ci
-            
+
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
 
@@ -78,9 +78,10 @@ jobs:
 
       - name: Upload function zip to S3
         run: |
-          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+          aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
         env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
+        super_secret: ${{ secrets.AWS_CONFIG }}
+
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
