@@ -6,7 +6,6 @@ on:
       - test-field
 
 jobs:
-  # Job: AWS_Job (AWS Configuration)
   AWS_Job:
     runs-on: ubuntu-latest
     env:
@@ -30,9 +29,6 @@ jobs:
 
       - name: Show AWS CLI version
         run: aws --version
-
-  # Job: Lambda-Code-Or-Function (Build + Deploy Preparation)
-# ...
 
   Lambda_Code:
     runs-on: ubuntu-latest
@@ -66,60 +62,56 @@ jobs:
         run: |
           aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
+  BuildAndZipLambdas2:
+    needs: Lambda_Code
+    strategy:
+      matrix:
+        lambda_function: ${{fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) || 'default'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load new repo state (Build)
+        uses: actions/checkout@v4
 
+      - name: Install zip (Build)
+        uses: montudor/action-zip@v1
 
-# Job: Build-and-Zip-Lambdas2 (Build + Deploy)
-BuildAndZipLambdas2:
-  needs: Lambda_Code
-  strategy:
-    matrix:
-      lambda_function: ${{ fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) || 'default'}}
-        
-  runs-on: ubuntu-latest
-  steps:
-    - name: Load new repo state (Build)
-      uses: actions/checkout@v4
+      - name: Install Node.js (Build)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-    - name: Install zip (Build)
-      uses: montudor/action-zip@v1
+      - name: Display Function - ${{ matrix.lambda_function }} (Build)
+        run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
 
-    - name: Install Node.js (Build)
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      - name: Cache node-modules (Build)
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/${{ matrix.lambda_function }}
+          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles('${{ matrix.lambda_function }}/package-lock.json') }}
 
-    - name: Display Function - ${{ matrix.lambda_function }} (Build)
-      run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
+      - name: install node_modules (Build)
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        working-directory: ${{ matrix.lambda_function }}
+        run: |
+            npm install
+            npm ci
 
-    - name: Cache node-modules (Build)
-      id: cache-node-modules
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.workspace }}/${{ matrix.lambda_function }}
-        key: ${{ matrix.lambda_function }}-packages-${{ hashFiles('${{ matrix.lambda_function }}/package-lock.json') }}
+      - name: Cache function-zips (Build)
+        id: cache-function-zips 
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.lambda_function }}-zip-${{ hashFiles('${{ matrix.lambda_function }}/index.js', '${{ matrix.lambda_function }}/package-lock.json') }}
 
-    - name: install node_modules (Build)
-      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-      working-directory: ${{ matrix.lambda_function }}
-      run: |
-          npm install
-          npm ci
+      - name: zip functions (Build)
+        if: ${{ steps.cache-function-zips.outputs.cache-hit != 'true' }}
+        run: | 
+          zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
+          echo "packed function ${{ matrix.lambda_function }}"
 
-    - name: Cache function-zips (Build)
-      id: cache-function-zips 
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.workspace }}
-        key: ${{ matrix.lambda_function }}-zip-${{ hashFiles('${{ matrix.lambda_function }}/index.js', '${{ matrix.lambda_function }}/package-lock.json') }}
+      - name: Display result (Build)
+        run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-    - name: zip functions (Build)
-      if: ${{ steps.cache-function-zips.outputs.cache-hit != 'true' }}
-      run: | 
-        zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
-        echo "packed function ${{ matrix.lambda_function }}"
-
-    - name: Display result (Build)
-      run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
-
-    - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy (Deploy)
-      run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
+      - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy (Deploy)
+        run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
