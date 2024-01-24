@@ -1,0 +1,30 @@
+name: AWS Job
+
+on:
+  push:
+    branches:
+      - test-field
+
+jobs:
+  aws-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS CLI
+        run: |
+          mkdir -p ~/.aws/
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = eu-central-1" >> ~/.aws/config
+
+      - name: Show AWS credentials
+        run: cat ~/.aws/credentials
+
+      - name: Show AWS config
+        run: cat ~/.aws/config
+
+      - name: List AWS profiles
+        run: aws configure list-profiles
+
+      - name: List S3 buckets
+        run: aws s3 ls --region eu-central-1
