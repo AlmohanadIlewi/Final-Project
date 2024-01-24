@@ -49,27 +49,60 @@ jobs:
       - name: result list-functions
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # Trigger Matrix-Job Build-and-Zip-Lambdas
+      - name: Deploy Lambdi.json to S3
+        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-  Build-and-Zip-Lambdas2:
-    needs: Lambda-Code
+Build-and-Zip-Lambdas2:
+    needs: Lambda-Code-Or-Function
+    strategy:
+      matrix:
+        lambda_function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
+      - name: Lade neuen Repo-Zustand
+        uses: actions/checkout@v4  
+      - name: Install zip
+        uses: montudor/action-zip@v1       
+      - name: installiere nodeJs
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
-      - name: Check if package.json exists
-        run: test -f ${{ matrix.lambda_function }}/package.json || echo "No package.json found"
-      
-      - name: Install dependencies
+      - name: Display Funktion - ${{ matrix.lambda_function }}
+        run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
+      - name: Cache node-modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/${{ matrix.lambda_function }}
+          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
+      - name: install node_modules
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        working-directory: ${{ matrix.lambda_function }}
+        continue-on-error: true
         run: |
-          cd ${{ matrix.lambda_function }}
-          npm install
-          npm ci
+            npm install
+            npm ci
+  # Build-and-Zip-Lambdas2:
+  #   needs: Lambda-Code
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out the code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+
+  #     - name: Check if package.json exists
+  #       run: test -f ${{ matrix.lambda_function }}/package.json || echo "No package.json found"
+      
+  #     - name: Install dependencies
+  #       run: |
+  #         cd ${{ matrix.lambda_function }}
+  #         npm install
+  #         npm ci
 
 
       - name: Zip function
