@@ -53,7 +53,7 @@ jobs:
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile techstarter || true
 
- Build-and-Zip-Lambdas2:
+Build-and-Zip-Lambdas2:
   needs: Lambda-Code
   strategy:
     matrix:
