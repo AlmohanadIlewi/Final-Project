@@ -75,12 +75,8 @@ jobs:
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
       - name: Upload function zip to S3
-        uses: aws-actions/s3-upload@v2
-        with:
-          bucket-name: tf-backend-abschlussprojekt
-          object-name: ${{ matrix.lambda_function }}.zip
-          acl: public-read
-          region: eu-central-1
+        run: |
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
@@ -93,18 +89,19 @@ jobs:
           terraform_version: 1.1.0
 
       - name: Configure AWS CLI for Terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          source AWS_CONFIG
           echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
-        shell: bash
 
-      # - name: Deploy Lambdas and Trigger Terraform
-      #   run: |
-      #     echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-      #     aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl=public-read --region eu-central-1
-      #     echo "Triggering Terraform deployment..."
-      #     terraform init
-      #     terraform validate
-      #     terraform plan
-      #     terraform apply -auto-approve
+      - name: Deploy Lambdas and Trigger Terraform
+        run: |
+          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+          echo "Triggering Terraform deployment..."
+          terraform init
+          terraform validate
+          terraform plan
+          terraform apply -auto-approve
