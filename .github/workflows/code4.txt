@@ -22,8 +22,8 @@ jobs:
       - name: List AWS profiles
         run: aws configure list-profiles
 
-    - name: List S3 buckets
-      run: aws s3 ls --region eu-central-1 --profile techstarter
+      - name: List S3 buckets
+        run: aws s3 ls --region eu-central-1 --profile techstarter
 
   Lambda-Code:
     runs-on: ubuntu-latest
