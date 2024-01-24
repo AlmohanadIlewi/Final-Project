@@ -28,11 +28,13 @@ jobs:
         run: terraform version
 
       - name: 'Configure AWS Credentials'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
+  uses: aws-actions/configure-aws-credentials@v1
+  with:
+    aws-region: eu-central-1
+  env:
+    super_secret: ${{ secrets.AWS_CONFIG }}
+
+          
 
       - name: Display AWS credentials
         run: cat ~/.aws/credentials
@@ -41,4 +43,5 @@ jobs:
         run: aws configure list-profiles
 
       - name: List S3 buckets
-        run: aws s3 ls --region eu-central-1
+        run: aws s3 ls --region eu-central-1 --profile techstarter
+    

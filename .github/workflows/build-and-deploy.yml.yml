@@ -82,6 +82,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+    - name: 'Configure AWS Credentials'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: eu-central-1
+      env:
+        super_secret: ${{ secrets.AWS_CONFIG }}
+
+
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
     needs: Build-and-Zip-Lambdas2
