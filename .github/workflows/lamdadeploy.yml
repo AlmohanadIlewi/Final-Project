@@ -15,6 +15,7 @@ jobs:
           echo "[default]" > ~/.aws/credentials
           echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
           echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+          echo "region = eu-central-1" >> ~/.aws/config
 
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
@@ -102,7 +103,6 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.1.0
-
 
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
