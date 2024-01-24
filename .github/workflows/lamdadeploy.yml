@@ -112,7 +112,7 @@ jobs:
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
-          
+      
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
