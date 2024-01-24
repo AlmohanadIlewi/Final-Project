@@ -56,8 +56,6 @@ jobs:
       - name: result list-functions (Build)
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
 
-      - name: Debugging - Before Sync
-        run: ls -l public/
 
       - name: Deploy to S3
         if: github.ref == 'refs/heads/test-field'
