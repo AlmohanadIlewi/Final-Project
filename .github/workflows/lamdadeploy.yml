@@ -66,10 +66,7 @@ jobs:
         run: |
           aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-      # - name: Debugging 
-      #   run: aws s3 ls s3://tfstate-bucket-abschlussproject/
 
-  # ...
 
   # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
   Build_and_Zip_Lambdas2:
