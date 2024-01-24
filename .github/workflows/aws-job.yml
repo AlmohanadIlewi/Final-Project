@@ -9,19 +9,34 @@ jobs:
   aws-job:
     runs-on: ubuntu-latest
     steps:
+      - name: List Repository Contents
+        run: |
+          ls ${{ github.workspace }}
+
+      - name: Install AWS CLI
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Check if AWS CLI is installed
+        run: |
+          aws --version
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Check Terraform version
+        run: terraform version
+
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
           echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
-          echo "region = eu-central-1" >> ~/.aws/config
+          echo "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+          echo "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+          echo "region = eu-central-1" > ~/.aws/config
 
-      - name: Show AWS credentials
+      - name: Display AWS credentials
         run: cat ~/.aws/credentials
-
-      - name: Show AWS config
-        run: cat ~/.aws/config
 
       - name: List AWS profiles
         run: aws configure list-profiles
