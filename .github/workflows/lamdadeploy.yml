@@ -99,12 +99,12 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
         shell: bash
 
-      - name: Deploy Lambdas and Trigger Terraform
-        run: |
-          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl=public-read --region eu-central-1
-          echo "Triggering Terraform deployment..."
-          terraform init
-          terraform validate
-          terraform plan
-          terraform apply -auto-approve
+      # - name: Deploy Lambdas and Trigger Terraform
+      #   run: |
+      #     echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
+      #     aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl=public-read --region eu-central-1
+      #     echo "Triggering Terraform deployment..."
+      #     terraform init
+      #     terraform validate
+      #     terraform plan
+      #     terraform apply -auto-approve
