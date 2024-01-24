@@ -65,10 +65,16 @@ jobs:
         with:
           node-version: 18
 
+      - name: Check if package.json exists
+        run: test -f ${{ matrix.lambda_function }}/package.json || echo "No package.json found"
+      
       - name: Install dependencies
         run: |
+          cd ${{ matrix.lambda_function }}
           npm install
           npm ci
+
+
 
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
@@ -98,7 +104,7 @@ jobs:
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
-      - name: Deploy Lambdas and Trigger Terraform
+      name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
           aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
