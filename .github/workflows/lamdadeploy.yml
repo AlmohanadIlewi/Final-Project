@@ -51,7 +51,7 @@ jobs:
         # Trigger Matrix-Job Build-and-Zip-Lambdas
 
       - name: Deploy Lambdi.json to S3
-        run: aws s3 cp ./lambda_test.zip s3://tfstate-bucket-abschlussproject/lambda_test.zip --acl public-read --region eu-central-1 --profile techstarter
+        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile techstarter || true
 
   Build-and-Zip-Lambdas2:
     needs: Lambda-Code
@@ -91,23 +91,15 @@ jobs:
       - name: Display result
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-      # - name: Debugging Output
-      #   run: |
-      #     echo "Current directory: $(pwd)"
-      #     echo "Files in the current directory: $(ls)"
-      #     aws configure list
-      #   env:
-      #     super_secret: ${{ secrets.AWS_CONFIG }}
-
       - name: Upload function zip to S3
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-          aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+          aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Show AWS Config
-        run: aws configure list
+        run: aws configure list --profile techstarter
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
@@ -130,7 +122,7 @@ jobs:
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
           echo "Triggering Terraform deployment..."
           terraform init
           terraform validate
