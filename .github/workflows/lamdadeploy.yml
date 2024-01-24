@@ -6,6 +6,7 @@ on:
       - test-field
 
 jobs:
+  # Job: AWS_Job (AWS Configuration)
   AWS_Job:
     runs-on: ubuntu-latest
     env:
@@ -30,8 +31,12 @@ jobs:
       - name: Show AWS CLI version
         run: aws --version
 
+  # Job: Lambda-Code-Or-Function (Build + Deploy Preparation)
+# ...
+
   Lambda_Code:
     runs-on: ubuntu-latest
+    needs: AWS_Job
     outputs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
     steps:
@@ -61,14 +66,15 @@ jobs:
         run: |
           aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-  # ...
+      # - name: Debugging 
+      #   run: aws s3 ls s3://tfstate-bucket-abschlussproject/
 
   # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
   Build_and_Zip_Lambdas2:
     needs: Lambda_Code
     strategy:
       matrix:
-        lambda_function: ${{fromJson(needs.Lambda_Code.outputs.LAMBDA_TF)}}
+        lambda_function: ${{ fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) }}
         
     runs-on: ubuntu-latest
     steps:
@@ -118,4 +124,3 @@ jobs:
 
       - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy (Deploy)
         run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
-
