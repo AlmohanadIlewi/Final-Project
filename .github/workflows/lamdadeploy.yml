@@ -51,7 +51,8 @@ jobs:
         # Trigger Matrix-Job Build-and-Zip-Lambdas
 
       - name: Deploy Lambdi.json to S3
-        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
+        run: aws s3 cp lambdi.json s3://tf-backend-abschlussprojekt/lambdi.json
+
 
   Build-and-Zip-Lambdas2:
     needs: Lambda-Code
