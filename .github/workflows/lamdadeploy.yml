@@ -80,13 +80,13 @@ jobs:
       - name: Display result
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-      - name: Debugging Output
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Files in the current directory: $(ls)"
-          aws configure list
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
+      # - name: Debugging Output
+      #   run: |
+      #     echo "Current directory: $(pwd)"
+      #     echo "Files in the current directory: $(ls)"
+      #     aws configure list
+      #   env:
+      #     super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Upload function zip to S3
         run: |
