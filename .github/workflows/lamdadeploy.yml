@@ -112,14 +112,7 @@ jobs:
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
-          - name: Configure AWS CLI
-  run: |
-    mkdir -p ~/.aws/
-    echo "$super_secret" > ~/.aws/credentials
-  env:
-    super_secret: ${{ secrets.AWS_CONFIG }}
-
-
+          
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
