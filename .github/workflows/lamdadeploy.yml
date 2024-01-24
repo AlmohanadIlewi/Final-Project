@@ -61,15 +61,12 @@ jobs:
       - name: result list-functions (Build)
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
 
-      - name: Debugging - Before Sync
-        run: ls -l ${{ github.workspace }}/public/
-
       - name: Deploy to S3
         if: github.ref == 'refs/heads/test-field'
         run: |
           aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-      - name: Debugging - After Sync
+      - name: Debugging 
         run: aws s3 ls s3://tfstate-bucket-abschlussproject/
 
 # ...
