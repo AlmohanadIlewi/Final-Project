@@ -22,7 +22,7 @@ jobs:
           aws --version
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: Check Terraform version
         run: terraform version
