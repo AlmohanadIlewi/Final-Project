@@ -32,6 +32,8 @@ jobs:
         run: aws --version
 
   # Job: Lambda-Code-Or-Function (Build + Deploy Preparation)
+# ...
+
   Lambda_Code:
     runs-on: ubuntu-latest
     needs: AWS_Job
@@ -57,15 +59,18 @@ jobs:
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
 
       - name: Debugging - Before Sync
-        run: ls -l public/
+        run: ls -l ${{ github.workspace }}/public/
 
       - name: Deploy to S3
         if: github.ref == 'refs/heads/test-field'
         run: |
-          aws s3 sync public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
+          aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
       - name: Debugging - After Sync
         run: aws s3 ls s3://tfstate-bucket-abschlussproject/
+
+# ...
+
 
   # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
   Build_and_Zip_Lambdas2:
