@@ -69,11 +69,11 @@ jobs:
 
 
 # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
-Build_and_Zip_Lambdas2:
+BuildAndZipLambdas2:
   needs: Lambda_Code
   strategy:
     matrix:
-      lambda_function: ${{fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) || 'default'}}
+      lambda_function: ${{ fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) || 'default'}}
         
   runs-on: ubuntu-latest
   steps:
