@@ -28,11 +28,11 @@ jobs:
         run: terraform version
 
       - name: 'Configure AWS Credentials'
-  uses: aws-actions/configure-aws-credentials@v1
-  with:
-    aws-region: eu-central-1
-  env:
-    super_secret: ${{ secrets.AWS_CONFIG }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-central-1
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG }}
 
           
 
