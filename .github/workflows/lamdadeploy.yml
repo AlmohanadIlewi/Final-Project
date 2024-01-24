@@ -66,8 +66,10 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm ci
-
+        run: |
+            npm install
+            npm ci
+            
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
 
@@ -88,11 +90,13 @@ jobs:
         with:
           terraform_version: 1.1.0
 
-      - name: Configure AWS CLI for Terraform
+      - name: Configure AWS CLI
         run: |
+          mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
+
 
       - name: Deploy Lambdas and Trigger Terraform
         run: |
