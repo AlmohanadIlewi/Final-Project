@@ -84,7 +84,15 @@ jobs:
 
       - name: Upload function zip to S3
         run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in the current directory: $(ls)"
+          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
           aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG }}
+
+      - name: Show AWS Config
+        run: aws configure list
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
