@@ -20,11 +20,15 @@ jobs:
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
 
+      - name: Show AWS config
+        run: cat ~/.aws/config
+
       - name: List AWS profiles
         run: aws configure list-profiles
 
       - name: List S3 buckets
         run: aws s3 ls --region eu-central-1
+
 
   Lambda-Code:
     runs-on: ubuntu-latest
