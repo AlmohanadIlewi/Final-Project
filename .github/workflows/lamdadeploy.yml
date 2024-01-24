@@ -67,10 +67,10 @@ jobs:
 
   BuildAndZipLambdas2:
     needs: Lambda_Code
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         lambda_function: ${{fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) || 'default'}}
-    runs-on: ubuntu-latest
     steps:
       - name: Load new repo state (Build)
         uses: actions/checkout@v4
