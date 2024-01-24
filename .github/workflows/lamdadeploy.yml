@@ -25,6 +25,7 @@ jobs:
       - name: List S3 buckets
         run: aws s3 ls --region eu-central-1 --profile techstarter
 
+
   Lambda-Code-Or-Function:
     runs-on: ubuntu-latest
     needs: aws-job
