@@ -43,6 +43,9 @@ jobs:
       - name: Load new repo state (Build)
         uses: actions/checkout@v4
 
+      - name: Show repository content
+        run: ls -la 
+
       - name: List Lambda Functions (Build)
         id: list-functions
         run: |
