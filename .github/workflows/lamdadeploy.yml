@@ -101,8 +101,8 @@ jobs:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
 
-  Deploy-Lambdas-and-Trigger-Terraform:
-    runs-on: ubuntu-latest
+      - name: Deploy-Lambdas-and-Trigger-Terraform
+        runs-on: ubuntu-latest
     steps:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -125,3 +125,4 @@ jobs:
           terraform validate
           terraform plan
           terraform apply -auto-approve
+
