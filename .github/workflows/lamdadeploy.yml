@@ -56,9 +56,16 @@ jobs:
       - name: result list-functions (Build)
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
 
-      - name: Deploy to S3 (Deploy)
+      - name: Debugging - Before Sync
+        run: ls -l public/
+
+      - name: Deploy to S3
         if: github.ref == 'refs/heads/test-field'
         run: aws s3 sync public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read
+
+- name: Debugging - After Sync
+  run: aws s3 ls s3://tfstate-bucket-abschlussproject/
+
 
   # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
   Build-and-Zip-Lambdas2:
