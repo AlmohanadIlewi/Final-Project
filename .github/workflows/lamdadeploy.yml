@@ -53,7 +53,7 @@ jobs:
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tf-backend-abschlussprojekt/ --delete --acl=public-read || true
         # Job: Deploy-Lambdas (Deploy)
 
-  Build-and-Zip-Lambdas2:
+    Build-and-Zip-Lambdas2:
     needs: Lambda-Code-Or-Function
     strategy:
       matrix:
@@ -98,8 +98,8 @@ jobs:
 
       - name: Configure AWS CLI for Terraform
         run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=$(echo $super_secret | jq -r .aws_access_key_id)" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $super_secret | jq -r .aws_secret_access_key)" >> $GITHUB_ENV
 
       - name: Deploy Lambdas and Trigger Terraform
         run: |
