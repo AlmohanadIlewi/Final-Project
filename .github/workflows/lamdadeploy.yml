@@ -94,12 +94,13 @@ Build-and-Zip-Lambdas2:
     - name: Upload function zip to S3
       run: |
         echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-        aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 \
-          --access-key-id $AWS_ACCESS_KEY_ID \
-          --secret-access-key $AWS_SECRET_ACCESS_KEY
-  env:
-    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+        aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 
 
   Deploy-Lambdas-and-Trigger-Terraform:
