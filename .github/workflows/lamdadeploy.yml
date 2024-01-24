@@ -5,31 +5,25 @@ on:
     branches:
       - test-field
 
-on:
-  push:
-    branches:
-      - test-field
-
 jobs:
   aws-job:
-          runs-on: ubuntu-latest
-          steps:
-            - name: Configure AWS CLI
-              run: |
-                mkdir -p ~/.aws/
-                echo "$super_secret" > ~/.aws/credentials
-              env:
-                super_secret: ${{ secrets.AWS_CONFIG }}
-      
-            - name: Show AWS credentials
-              run: cat ~/.aws/credentials
-      
-            - name: List AWS profiles
-              run: aws configure list-profiles
-      
-            - name: List S3 buckets
-              run: aws s3 ls --region eu-central-1 --profile techstarter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS CLI
+        run: |
+          mkdir -p ~/.aws/
+          echo "$super_secret" > ~/.aws/credentials
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG }}
 
+      - name: Show AWS credentials
+        run: cat ~/.aws/credentials
+
+      - name: List AWS profiles
+        run: aws configure list-profiles
+
+      - name: List S3 buckets
+        run: aws s3 ls --region eu-central-1 --profile techstarter
 
   Lambda-Code-Or-Function:
     runs-on: ubuntu-latest
@@ -38,7 +32,7 @@ jobs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
     steps:
       - name: Lade neuen Repo-Zustand
-        uses: actions/checkout@v4  
+        uses: actions/checkout@v4
       - name: List Lambda Functions
         working-directory: ${{ github.workspace }}
         id: list-functions
@@ -55,16 +49,12 @@ jobs:
       - name: result list-functions
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # trigger Matrix-Job Build-and-Zip-Lambdas
-      - name: Deploy Lambdi.json to S3
-        run: aws s3 sync ${{ github.workspace }}/public/ s3://tf-backend-abschlussprojekt/ --delete --acl=public-read || true
-        # Job: Deploy-Lambdas (Deploy)
 
-    Build-and-Zip-Lambdas2:
+  Build-and-Zip-Lambdas2:
     needs: Lambda-Code-Or-Function
     strategy:
       matrix:
         lambda_function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
-        
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
@@ -94,7 +84,7 @@ jobs:
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
-  - name: Deploy Lambdas and Trigger Terraform
+  Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Terraform
@@ -104,8 +94,10 @@ jobs:
 
       - name: Configure AWS CLI for Terraform
         run: |
-          echo "AWS_ACCESS_KEY_ID=$(echo $super_secret | jq -r .aws_access_key_id)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $super_secret | jq -r .aws_secret_access_key)" >> $GITHUB_ENV
+          source AWS_CONFIG
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+        shell: bash
 
       - name: Deploy Lambdas and Trigger Terraform
         run: |
