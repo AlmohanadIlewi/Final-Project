@@ -12,7 +12,9 @@ jobs:
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
-          echo -e "[default]\n$(cat ${{ secrets.AWS_CONFIG }})" > ~/.aws/credentials
+          echo "$super_secret" > ~/.aws/credentials
+        env:
+          super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
@@ -87,11 +89,10 @@ jobs:
           terraform_version: 1.1.0
 
       - name: Configure AWS CLI for Terraform
+        run: |
+          echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
-        run: |
-          echo "AWS_ACCESS_KEY_ID=$(grep 'AWS_ACCESS_KEY_ID' $super_secret | cut -d'=' -f2)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(grep 'AWS_SECRET_ACCESS_KEY' $super_secret | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Deploy Lambdas and Trigger Terraform
         run: |
