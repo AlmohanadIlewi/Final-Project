@@ -50,7 +50,7 @@ jobs:
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # trigger Matrix-Job Build-and-Zip-Lambdas
 
-  Build-and-Zip-Lambdas2:
+    Build-and-Zip-Lambdas2:
     needs: Lambda-Code-Or-Function
     strategy:
       matrix:
@@ -80,8 +80,7 @@ jobs:
         run: |
           aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
         env:
-        super_secret: ${{ secrets.AWS_CONFIG }}
-
+          super_secret: ${{ secrets.AWS_CONFIG }}  # Corrected indentation
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
@@ -97,7 +96,6 @@ jobs:
           echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
-
 
       - name: Deploy Lambdas and Trigger Terraform
         run: |
