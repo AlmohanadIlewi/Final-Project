@@ -32,7 +32,6 @@ jobs:
 
   Lambda_Code:
     runs-on: ubuntu-latest
-    needs: AWS_Job
     outputs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
     steps:
