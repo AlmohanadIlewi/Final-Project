@@ -73,7 +73,7 @@ jobs:
     needs: Lambda_Code
     strategy:
       matrix:
-        lambda_function: ${{fromJson(needs.Lambda_Code.outputs.LAMBDA_TF)}}
+        lambda_function: ${{ fromJson(needs.Lambda_Code.outputs.LAMBDA_TF) }}
         
     runs-on: ubuntu-latest
     steps:
