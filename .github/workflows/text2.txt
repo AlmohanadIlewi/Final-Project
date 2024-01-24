@@ -74,22 +74,18 @@ jobs:
           npm install
           npm ci
 
+
+
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
 
       - name: Display result
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-      - name: Debugging Output
+      - name: Upload function zip to S3
         run: |
           echo "Current directory: $(pwd)"
           echo "Files in the current directory: $(ls)"
-          aws configure list
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
-
-      - name: Upload function zip to S3
-        run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
           aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
         env:
@@ -116,6 +112,7 @@ jobs:
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
+      
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
