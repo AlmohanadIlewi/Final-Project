@@ -79,8 +79,6 @@ jobs:
       - name: Display result
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-        - name: Show AWS Config
-          run: aws configure list
 
       - name: Upload function zip to S3
         run: |
