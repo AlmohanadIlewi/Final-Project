@@ -12,9 +12,9 @@ jobs:
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
-          echo "$super_secret" > ~/.aws/credentials
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
 
       - name: Show AWS credentials
         run: cat ~/.aws/credentials
@@ -23,7 +23,7 @@ jobs:
         run: aws configure list-profiles
 
       - name: List S3 buckets
-        run: aws s3 ls --region eu-central-1 --profile techstarter
+        run: aws s3 ls --region eu-central-1
 
   Lambda-Code:
     runs-on: ubuntu-latest
@@ -51,57 +51,48 @@ jobs:
         # Trigger Matrix-Job Build-and-Zip-Lambdas
 
       - name: Deploy Lambdi.json to S3
-        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile techstarter || true
+        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-Build-and-Zip-Lambdas2:
-  needs: Lambda-Code
-  strategy:
-    matrix:
-      lambda_function: ${{ fromJson(needs.Lambda-Code.outputs.LAMBDA_TF) }}
+  Build-and-Zip-Lambdas2:
+    needs: Lambda-Code
+    strategy:
+      matrix:
+        lambda_function: ${{ fromJson(needs.Lambda-Code.outputs.LAMBDA_TF) }}
       
-  runs-on: ubuntu-latest
-  steps:
-    - name: Lade neuen Repo-Zustand
-      uses: actions/checkout@v4  
-    - name: Install zip
-      uses: montudor/action-zip@v1       
-    - name: installiere nodeJs
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
-    - name: Display Funktion - ${{ matrix.lambda_function }}
-      run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
-    - name: Cache node-modules
-      id: cache-node-modules
-      uses: actions/cache@v4
-      with:
-        path: ${{ github.workspace }}/${{ matrix.lambda_function }}
-        key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
-    - name: install node_modules
-      if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-      working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
-      continue-on-error: true
-      run: |
-          npm install
-          npm ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lade neuen Repo-Zustand
+        uses: actions/checkout@v4  
+      - name: Install zip
+        uses: montudor/action-zip@v1       
+      - name: installiere nodeJs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Display Funktion - ${{ matrix.lambda_function }}
+        run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
+      - name: Cache node-modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/${{ matrix.lambda_function }}
+          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
+      - name: install node_modules
+        if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
+        working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
+        continue-on-error: true
+        run: |
+            npm install
+            npm ci
 
-    - name: Zip function
-      run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
+      - name: Zip function
+        run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
 
-    - name: Display result
-      run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
+      - name: Display result
+        run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
 
-    - name: Upload function zip to S3
-      run: |
-        echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-        aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
+      - name: Upload function zip to S3
+        run: aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
@@ -112,17 +103,10 @@ Build-and-Zip-Lambdas2:
         with:
           terraform_version: 1.1.0
 
-      - name: Configure AWS CLI
-        run: |
-          mkdir -p ~/.aws/
-          echo "$super_secret" > ~/.aws/credentials
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
-
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
           echo "Triggering Terraform deployment..."
           terraform init
           terraform validate
