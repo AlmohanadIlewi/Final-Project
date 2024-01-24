@@ -49,14 +49,15 @@ jobs:
       - name: result list-functions
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # Trigger Matrix-Job Build-and-Zip-Lambdas
+
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read || true
 
-Build-and-Zip-Lambdas2:
-    needs: Lambda-Code-Or-Function
+  Build-and-Zip-Lambdas2:
+    needs: Lambda-Code
     strategy:
       matrix:
-        lambda_function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda_function: ${{ fromJson(needs.Lambda-Code.outputs.LAMBDA_TF) }}
         
     runs-on: ubuntu-latest
     steps:
@@ -78,32 +79,11 @@ Build-and-Zip-Lambdas2:
           key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
       - name: install node_modules
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-        working-directory: ${{ matrix.lambda_function }}
+        working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
         continue-on-error: true
         run: |
             npm install
             npm ci
-  # Build-and-Zip-Lambdas2:
-  #   needs: Lambda-Code
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check out the code
-  #       uses: actions/checkout@v4
-
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-
-  #     - name: Check if package.json exists
-  #       run: test -f ${{ matrix.lambda_function }}/package.json || echo "No package.json found"
-      
-  #     - name: Install dependencies
-  #       run: |
-  #         cd ${{ matrix.lambda_function }}
-  #         npm install
-  #         npm ci
-
 
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
@@ -130,7 +110,6 @@ Build-and-Zip-Lambdas2:
         run: aws configure list
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
-
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
