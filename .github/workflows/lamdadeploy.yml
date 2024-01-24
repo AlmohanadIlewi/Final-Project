@@ -105,14 +105,19 @@ jobs:
         with:
           terraform_version: 1.1.0
 
-  
-
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
-            echo "$super_secret" > ~/.aws/credentials
+          echo "$super_secret" > ~/.aws/credentials
         env:
           super_secret: ${{ secrets.AWS_CONFIG }}
+
+          - name: Configure AWS CLI
+  run: |
+    mkdir -p ~/.aws/
+    echo "$super_secret" > ~/.aws/credentials
+  env:
+    super_secret: ${{ secrets.AWS_CONFIG }}
 
 
       - name: Deploy Lambda-Function and Trigger Terraform
