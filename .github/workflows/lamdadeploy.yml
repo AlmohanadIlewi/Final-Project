@@ -5,7 +5,6 @@ on:
     branches:
       - test-field
 
-
 jobs:
   aws-job:
     runs-on: ubuntu-latest
@@ -29,7 +28,6 @@ jobs:
 
       - name: List S3 buckets
         run: aws s3 ls --region eu-central-1
-
 
   Lambda-Code:
     runs-on: ubuntu-latest
@@ -99,6 +97,13 @@ jobs:
 
       - name: Upload function zip to S3
         run: aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+
+      - name: Upload to S3
+        run: |
+          aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
