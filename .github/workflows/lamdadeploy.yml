@@ -82,10 +82,10 @@ jobs:
       - name: Upload function zip to S3
         run: |
           aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
+        # env:
+        #   super_secret: ${{ secrets.AWS_CONFIG }}
 
-  Deploy-Lambdas-and-Trigger-Terraform:
+Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Terraform
@@ -101,10 +101,11 @@ jobs:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Deploy Lambdas and Trigger Terraform
-        uses: hashicorp/terraform-action@v2
-        with:
-          tf_actions_version: "1.1.0"
-          tf_actions_subcommand: "apply"
-        env:
-          TF_VAR_aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          TF_VAR_aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tf-backend-abschlussprojekt/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1
+          echo "Triggering Terraform deployment..."
+          terraform init
+          terraform validate
+          terraform plan
+          terraform apply -auto-approve
