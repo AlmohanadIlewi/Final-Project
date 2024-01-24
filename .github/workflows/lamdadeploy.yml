@@ -71,6 +71,7 @@ jobs:
           npm install
           npm ci
 
+
       - name: Zip function
         run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
 
