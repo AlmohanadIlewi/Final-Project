@@ -6,57 +6,61 @@ on:
       - test-field
 
 jobs:
-  example-job:
+  # Job: AWS_Job (AWS Configuration)
+  AWS_Job:
     runs-on: ubuntu-latest
+    env:
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || 'default' }}
     steps:
-      - name: Configure AWS CLI
+      - name: Configure AWS CLI (Build)
         run: |
           mkdir -p ~/.aws/
           echo "$super_secret" > ~/.aws/credentials
-        env:
+        env: 
           super_secret: ${{ secrets.AWS_CONFIG }}
-      
-      - name: Show AWS credentials
+
+      - name: Show AWS credentials (Build)
         run: cat ~/.aws/credentials
-      
-      - name: List AWS profiles
+
+      - name: List AWS profiles (Build)
         run: aws configure list-profiles
-      
-      - name: List S3 buckets
+
+      - name: List S3 buckets (Build)
         run: aws s3 ls --region eu-central-1 --profile techstarter
-      
+
+      - name: Show AWS CLI version
+        run: aws --version
+
+  # Job: Lambda-Code-Or-Function (Build + Deploy Preparation)
   Lambda-Code-Or-Function:
     runs-on: ubuntu-latest
-    needs: example-job
+    needs: AWS_Job
     outputs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
     steps:
-      - name: Load new repo state
-        uses: actions/checkout@v4  
-      - name: List Lambda Functions
-        working-directory: ${{ github.workspace }}
+      - name: Load new repo state (Build)
+        uses: actions/checkout@v4
+
+      - name: List Lambda Functions (Build)
         id: list-functions
         run: |
           cd ${{ github.workspace }}
-          echo "LAMBDA_TF=$(bash ./.github/scripts/lsdirs.sh)" >> $GITHUB_OUTPUT
+          echo "LAMBDA_TF=$(bash ./.github/scripts/lsdirs.sh)" >> $GITHUB_ENV
           echo "LAMBDI.JSON FILE Created:"
           cat lambdi.json
 
-      - name: Check lambdi.json existence
+      - name: Check lambdi.json existence (Build)
         run: |
           echo "lambdi.json exists: $(ls -l lambdi.json)"
 
-      - name: result list-functions
+      - name: result list-functions (Build)
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
-        # trigger Matrix-Job Build-and-Zip-Lambdas
-      # - name: Deploy Lambdi.json to S3
-      #   run: aws s3 cp lambdi.json s3://tfstate-bucket-abschlussproject/lambdi.json
 
-      - name: Deploy to S3
+      - name: Deploy to S3 (Deploy)
         if: github.ref == 'refs/heads/test-field'
         run: aws s3 sync public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read
 
-
+  # Job: Build-and-Zip-Lambdas2 (Build + Deploy)
   Build-and-Zip-Lambdas2:
     needs: Lambda-Code-Or-Function
     strategy:
@@ -65,42 +69,49 @@ jobs:
         
     runs-on: ubuntu-latest
     steps:
-      - name: Load new repo state
-        uses: actions/checkout@v4  
-      - name: Install zip
-        uses: montudor/action-zip@v1       
-      - name: Install Node.js
+      - name: Load new repo state (Build)
+        uses: actions/checkout@v4
+
+      - name: Install zip (Build)
+        uses: montudor/action-zip@v1
+
+      - name: Install Node.js (Build)
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Display Function - ${{ matrix.lambda_function }}
-        run: echo "packing Lambda-Function ${{ matrix.lambda_function }}"
-      - name: Cache node-modules
+
+      - name: Display Function - ${{ matrix.lambda_function }} (Build)
+        run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
+
+      - name: Cache node-modules (Build)
         id: cache-node-modules
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/${{ matrix.lambda_function }}
-          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
-      - name: install node_modules
+          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles('${{ matrix.lambda_function }}/package-lock.json') }}
+
+      - name: install node_modules (Build)
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
         working-directory: ${{ matrix.lambda_function }}
-      
         run: |
             npm install
             npm ci
-        
-      - name: Cache function-zips 
+
+      - name: Cache function-zips (Build)
         id: cache-function-zips 
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}
           key: ${{ matrix.lambda_function }}-zip-${{ hashFiles('${{ matrix.lambda_function }}/index.js', '${{ matrix.lambda_function }}/package-lock.json') }}
-      - name: zip functions
+
+      - name: zip functions (Build)
         if: steps.cache-function-zips.outputs.cache-hit != 'true'
         run: | 
           zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
           echo "packed function ${{ matrix.lambda_function }}"
-      - name: Display result
+
+      - name: Display result (Build)
         run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
-      - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy
+
+      - name: deploy lambda-function.zips to s3 and trigger Terraform-Deploy (Deploy)
         run: echo "deploying ${{ matrix.lambda_function }}.zip to s3"
