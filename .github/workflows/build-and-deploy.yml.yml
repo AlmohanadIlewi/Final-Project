@@ -43,7 +43,8 @@ jobs:
           key: ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}-packages-${{ hashFiles ('${{ needs.Lambda-Code.outputs.LAMBDA_TF }}/package-lock.json') }}
       - name: install node_modules
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-        working-directory: ${{ github.workspace }}/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}
+        working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
+        continue-on-error: true
         run: |
             npm install
             npm ci
