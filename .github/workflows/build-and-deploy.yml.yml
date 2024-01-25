@@ -44,7 +44,7 @@ jobs:
       - name: install node_modules
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
         working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
-      
+    
         run: |
             npm install
             npm ci
@@ -53,14 +53,13 @@ jobs:
       - name: Display result
         run: echo "$(ls ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip)"
       - name: Upload function zip to S3
-        run: aws s3 cp ./${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip s3://tfstate-bucket-abschlussproject/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip --acl public-read --region eu-central-1
+        run: aws s3 cp ./${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip s3://tfstate-bucket-abschlussproject/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip --acl public-read --region eu-central-1 --profile techstarter
 
       - name: Upload to S3
         run: |
           aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
         env:
           AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
-
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
