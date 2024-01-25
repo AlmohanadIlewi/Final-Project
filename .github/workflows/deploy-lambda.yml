@@ -16,13 +16,15 @@ jobs:
           fetch-depth: 2
 
       - name: Configure AWS CLI
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region eu-central-1
 
       - name: Print changed files
         run: |
           echo "List of changed files:" 
-          echo $(git diff --name-only HEAD^ HEAD)
+          echo "$(git diff --name-only HEAD^ HEAD)"
 
       - name: Deploy Modified Lambda Functions
         run: |
@@ -61,8 +63,6 @@ jobs:
 
             aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
           done
-
-          # The rest of your deployment steps here
 
       - name: Configure Terraform Backend
         run: |
