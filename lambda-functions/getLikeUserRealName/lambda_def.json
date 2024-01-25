@@ -1,7 +1,7 @@
 {
-    "function_name": "login-google",
-    "http_methode": "POST",
-    "route": "login/google",
+    "function_name": "getCommentsByPostID/lambda_def.json",
+    "http_methode": "GET",
+    "route": "getLikeNames",
     "meta": { 
         "package_type": "zip",
         "tags": {
