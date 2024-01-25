@@ -38,11 +38,11 @@ jobs:
 
       - name: Zip and Deploy Lambda Functions
         run: |
-          S3_BUCKET=tf-backend-abschlussprojekt
+          S3_BUCKET=tfstate-bucket-abschlussproject
           LAMBDA_FUNCTION_DIR=lambda-functions
           S3_KEY=lambda-function.zip
 
-          aws s3 sync ./build s3://tf-backend-abschlussprojekt/ --delete --acl public-read --region eu-central-1
+          aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
 
       - name: Execute Deployment Script
         run: |
