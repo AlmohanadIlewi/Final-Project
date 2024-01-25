@@ -1,5 +1,5 @@
+#!/bin/bash
 
-!/bin/bash
 directories=$(find ./* -type d -prune)
 dirs="["
 lambdi="{"
@@ -16,6 +16,7 @@ lambdi="${lambdi::-2}}"
 
 echo "$lambdi" > lambdi.json
 echo "$dirs"
+
 
 
 
