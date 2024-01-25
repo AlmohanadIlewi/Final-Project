@@ -17,11 +17,11 @@ jobs:
 
       - name: Configure AWS CLI
         run: |
-          echo "::add-mask::${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo "::add-mask::${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-          echo "AWS_DEFAULT_REGION=eu-central-1" >> $GITHUB_ENV
-          echo "AWS_CONFIG_FILE=$GITHUB_WORKSPACE/.aws/config" >> $GITHUB_ENV
-          echo "AWS_SHARED_CREDENTIALS_FILE=$GITHUB_WORKSPACE/.aws/credentials" >> $GITHUB_ENV
+          mkdir -p ~/.aws/
+          echo "$AWS_CONFIG" > ~/.aws/config
+        env:
+        AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
+
 
   deploy-lambda:
     runs-on: ubuntu-latest
