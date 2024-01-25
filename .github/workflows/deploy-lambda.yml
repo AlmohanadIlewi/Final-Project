@@ -21,19 +21,22 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Configure AWS CLI
+        - name: Configure AWS CLI
         run: |
-          mkdir -p ~/.aws/
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "region=eu-central-1" >> ~/.aws/credentials
+          mkdir -p $HOME/.aws/
+          echo "[default]" > $HOME/.aws/credentials
+          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $HOME/.aws/credentials
+          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $HOME/.aws/credentials
+          echo "region=eu-central-1" >> $HOME/.aws/credentials
+          echo "AWS_CONFIG_FILE=$GITHUB_WORKSPACE/.aws/config" >> $HOME/.bashrc
+          echo "AWS_SHARED_CREDENTIALS_FILE=$GITHUB_WORKSPACE/.aws/credentials" >> $HOME/.bashrc
         env:
           AWS_DEFAULT_REGION: eu-central-1
           AWS_CONFIG_FILE: $GITHUB_WORKSPACE/.aws/config
           AWS_SHARED_CREDENTIALS_FILE: $GITHUB_WORKSPACE/.aws/credentials
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 
       - name: Show AWS credentials
         run: cat $GITHUB_WORKSPACE/.aws/credentials
