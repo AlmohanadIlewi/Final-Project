@@ -40,6 +40,13 @@ jobs:
       - name: Show AWS credentials
         run: cat $GITHUB_WORKSPACE/.aws/credentials
 
+      - name: Debugging
+        run: |
+          env
+          ls -R $GITHUB_WORKSPACE
+          cat $GITHUB_WORKSPACE/.aws/credentials
+  
+
       - name: List AWS profiles
         run: aws configure list-profiles
 
