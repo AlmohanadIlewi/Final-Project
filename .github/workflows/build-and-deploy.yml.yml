@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
- 
+
       - name: Display Funktion - ${{ matrix.lambda_function }}
         run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
       - name: Cache node-modules
@@ -47,20 +47,20 @@ jobs:
         working-directory: ${{ matrix.lambda_function }}
         continue-on-error: true
         run: |
-            npm install
-            npm ci
+          npm install
+          npm ci
 
       - name: Zip function
-        run: zip -q -r ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip ${{ needs.Lambda-Code.outputs.LAMBDA_TF }} node_modules package.json index.js package-lock.json
+        run: zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }} node_modules package.json index.js package-lock.json
       - name: Display result
-        run: echo "$(ls ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip)"
+        run: echo "$(ls ${{ matrix.lambda_function }}.zip)"
       - name: Upload function zip to S3
-        run: aws s3 cp ./${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip s3://tfstate-bucket-abschlussproject/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip --acl public-read --region eu-central-1 
+        run: aws s3 cp ./${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 
 
   - name: Upload to S3
     run: aws s3 cp ./["lambda_test","login-google"].zip s3://tfstate-bucket-abschlussproject/["lambda_test","login-google"].zip --acl public-read --region eu-central-1
-        env:
-          AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
+    env:
+      AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
 
   Deploy-Lambdas-and-Trigger-Terraform:
     runs-on: ubuntu-latest
@@ -80,8 +80,8 @@ jobs:
 
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
-          echo "Deploying ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip to S3"
-          aws s3 cp ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip s3://tfstate-bucket-abschlussproject/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip --acl public-read --region eu-central-1 --profile techstarter
+          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
           echo "Triggering Terraform deployment..."
           terraform init
           terraform validate
