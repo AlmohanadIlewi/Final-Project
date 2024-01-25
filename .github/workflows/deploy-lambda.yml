@@ -33,10 +33,8 @@ jobs:
         run: |
           sudo apt-get install -y awscli
 
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: full
+      - name: Decode AWS_CONFIG secret
+        run: echo "${{ secrets.AWS_CONFIG }}" | base64 --decode > $GITHUB_WORKSPACE/.aws/credentials
 
       - name: Verify AWS credentials file
         run: test -f $GITHUB_WORKSPACE/.aws/credentials && echo "Credentials file exists" || echo "Credentials file does not exist"
@@ -46,6 +44,7 @@ jobs:
           env
           ls -R $GITHUB_WORKSPACE
           cat $GITHUB_WORKSPACE/.aws/credentials
+
 
   deploy-lambda:
     runs-on: ubuntu-latest
