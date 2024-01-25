@@ -20,8 +20,7 @@ jobs:
           mkdir -p ~/.aws/
           echo "$AWS_CONFIG" > ~/.aws/config
         env:
-        AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
-
+          AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
 
   deploy-lambda:
     runs-on: ubuntu-latest
