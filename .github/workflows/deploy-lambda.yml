@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 2
 
       - name: Configure AWS CLI
-          env:
+        env:
           super_secret: ${{ secrets.AWS_CONFIG }}
 
       - name: Print changed files
