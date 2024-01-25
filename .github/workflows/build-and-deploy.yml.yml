@@ -57,9 +57,8 @@ jobs:
       - name: Upload function zip to S3
         run: aws s3 cp ./${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip s3://tfstate-bucket-abschlussproject/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip --acl public-read --region eu-central-1 
 
-      - name: Upload to S3
-        run: |
-          aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
+  - name: Upload to S3
+    run: aws s3 cp ./["lambda_test","login-google"].zip s3://tfstate-bucket-abschlussproject/["lambda_test","login-google"].zip --acl public-read --region eu-central-1
         env:
           AWS_CONFIG: ${{ secrets.AWS_CONFIG }}
 
