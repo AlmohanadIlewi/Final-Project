@@ -41,9 +41,10 @@ jobs:
 
           aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
 
-
-      for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/*; do
-          if [ -d "$FUNCTION_DIR" ]; then
+      - name: Execute Deployment Script
+        run: |
+          for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/*; do
+            if [ -d "$FUNCTION_DIR" ]; then
               LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
 
               # Zip the Lambda function
@@ -58,6 +59,5 @@ jobs:
 
               # Cleanup
               rm $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip
-        fi
-    done
-
+            fi
+          done
