@@ -30,15 +30,32 @@ jobs:
           cd lambda-functions  # Assuming your Lambda functions are in a directory called "lambda-functions"
           zip -r $GITHUB_WORKSPACE/$PACKAGE_NAME .
 
-      - name: 'Configure AWS Credentials'
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1  # Ändern Sie dies entsprechend Ihrer AWS-Region
+      # - name: 'Configure AWS Credentials'
+      #   uses: aws-actions/configure-aws-credentials@v1-node16
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: eu-central-1  # Replace with your desired AWS region
+
+      - name: Configure AWS CLI
+              run: |
+                mkdir -p ~/.aws/
+                echo "$super_secret" > ~/.aws/credentials
+              env:
+                super_secret: ${{ secrets.AWS_CONFIG1 }}
+      
+            - name: Show AWS credentials
+              run: cat ~/.aws/credentials
+      
+            - name: List AWS profiles
+              run: aws configure list-profiles
+      
+            - name: List S3 buckets
+              run: aws s3 ls --region eu-central-1 --profile techstarter
+
 
       - name: 'Upload to S3 Bucket'
-        run: aws s3 cp $GITHUB_WORKSPACE/${{ steps.create_package.outputs.package_name }} s3://tfstate-bucket-abschlussproject1/
+        run: aws s3 cp $GITHUB_WORKSPACE/${{ steps.create_package.outputs.package_name }} s3://tf-backend-abschlussprojekt/
 
       - uses: actions/github-script@v6
         name: 'Create Git Tag'
