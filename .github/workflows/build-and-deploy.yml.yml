@@ -47,6 +47,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd ${{ matrix.lambda_function }}
           npm install
           npm ci
 
