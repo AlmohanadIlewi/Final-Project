@@ -1,4 +1,4 @@
-# name: Build and Deploy Lambda Functions
+name: Build and Deploy Lambda Functions
 
 on:
   push:
