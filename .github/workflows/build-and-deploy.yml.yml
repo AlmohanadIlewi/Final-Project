@@ -52,6 +52,7 @@ jobs:
           npm ci
 
 
+
       - name: Zip function
         run: zip -q -r ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip ${{ needs.Lambda-Code.outputs.LAMBDA_TF }} node_modules package.json index.js package-lock.json
       - name: Display result
