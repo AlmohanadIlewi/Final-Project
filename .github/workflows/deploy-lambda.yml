@@ -45,7 +45,8 @@ jobs:
         run: cat ~/.aws/config
 
       - name: List S3 buckets
-        run: aws s3 ls --region eu-central-1 --profile
+        run: aws s3 ls --region eu-central-1 --profile techstarter
+
 
       - name: 'Upload to S3 Bucket'
         run: aws s3 cp $GITHUB_WORKSPACE/${{ steps.create_package.outputs.package_name }} s3://tfstate-bucket-abschlussproject1/
