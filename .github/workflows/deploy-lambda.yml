@@ -30,7 +30,7 @@ jobs:
           LAMBDA_FUNCTION_DIR=lambda-function
           S3_KEY=lambda-function.zip
 
-          for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/*; do
+          for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/lambda-function-*; do
             LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
 
             aws s3 cp s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY $FUNCTION_DIR/existing_lambda.zip
@@ -62,6 +62,8 @@ jobs:
             aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
           done
 
+          # The rest of your deployment steps here
+
       - name: Configure Terraform Backend
         run: |
           echo "backend \"s3\" {" > backend.tf
@@ -77,8 +79,6 @@ jobs:
 
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
-          echo "Deploying $LAMBDA_FUNCTION_NAME.zip to S3"
-          aws s3 cp $LAMBDA_FUNCTION_NAME.zip s3://tfstate-bucket-abschlussproject/$LAMBDA_FUNCTION_NAME.zip --acl public-read --region eu-central-1 --profile techstarter
           echo "Triggering Terraform deployment..."
           terraform init
           terraform validate
