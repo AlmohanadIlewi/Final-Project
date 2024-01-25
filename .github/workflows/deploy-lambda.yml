@@ -33,13 +33,16 @@ jobs:
         with:
           fetch-depth: full
 
+      - name: Create Build Directory
+        run: mkdir -p $GITHUB_WORKSPACE/build
+
       - name: Zip and Deploy Lambda Functions
         run: |
           S3_BUCKET=tf-backend-abschlussprojekt
           LAMBDA_FUNCTION_DIR=lambda-functions
           S3_KEY=lambda-function.zip
 
-          aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
+          aws s3 sync ./build s3://tf-backend-abschlussprojekt/ --delete --acl public-read --region eu-central-1
 
       - name: Execute Deployment Script
         run: |
@@ -48,16 +51,16 @@ jobs:
               LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
 
               # Zip the Lambda function
-              (cd $LAMBDA_FUNCTION_DIR && zip -r $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip $LAMBDA_FUNCTION_NAME)
+              (cd $LAMBDA_FUNCTION_DIR && zip -r $GITHUB_WORKSPACE/build/$LAMBDA_FUNCTION_NAME.zip $LAMBDA_FUNCTION_NAME)
 
               # Upload the zip file to S3
-              aws s3 cp $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY
+              aws s3 cp $GITHUB_WORKSPACE/build/$LAMBDA_FUNCTION_NAME.zip s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY
 
               # Update the Lambda function code
               echo "Updating Lambda function: $LAMBDA_FUNCTION_NAME"
               aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --s3-bucket $S3_BUCKET --s3-key $LAMBDA_FUNCTION_NAME/$S3_KEY
 
               # Cleanup
-              rm $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip
+              rm $GITHUB_WORKSPACE/build/$LAMBDA_FUNCTION_NAME.zip
             fi
           done
