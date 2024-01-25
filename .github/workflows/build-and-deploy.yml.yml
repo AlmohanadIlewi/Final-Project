@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: aws-job
     outputs:
-      LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
+      LAMBDA_TF: ${{ needs.aws-job.outputs.LAMBDA_TF }}
     steps:
       - name: Lade neuen Repo-Zustand
         uses: actions/checkout@v4
@@ -39,7 +39,6 @@ jobs:
     strategy:
       matrix:
         lambda_function: ${{ fromJson(needs.Lambda-Code.outputs.LAMBDA_TF) }}
-      
     runs-on: ubuntu-latest
     steps:
       - name: Lade neuen Repo-Zustand
@@ -106,3 +105,5 @@ jobs:
           terraform validate
           terraform plan
           terraform apply -auto-approve
+
+
