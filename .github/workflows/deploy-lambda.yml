@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 2
 
-        - name: Configure AWS CLI
+      - name: Configure AWS CLI
         run: |
           mkdir -p $HOME/.aws/
           echo "[default]" > $HOME/.aws/credentials
@@ -36,7 +36,6 @@ jobs:
           AWS_SHARED_CREDENTIALS_FILE: $GITHUB_WORKSPACE/.aws/credentials
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
 
       - name: Show AWS credentials
         run: cat $GITHUB_WORKSPACE/.aws/credentials
