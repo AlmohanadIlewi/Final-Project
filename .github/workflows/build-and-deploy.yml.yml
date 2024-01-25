@@ -33,20 +33,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Display Funktion - ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}
-        run: echo "packing Lambda-Funktion ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}"
+ 
+      - name: Display Funktion - ${{ matrix.lambda_function }}
+        run: echo "packing Lambda-Funktion ${{ matrix.lambda_function }}"
       - name: Cache node-modules
         id: cache-node-modules
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/${{ needs.Lambda-Code.outputs.LAMBDA_TF }}
-          key: ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}-packages-${{ hashFiles ('${{ needs.Lambda-Code.outputs.LAMBDA_TF }}/package-lock.json') }}
+          path: ${{ github.workspace }}/${{ matrix.lambda_function }}
+          key: ${{ matrix.lambda_function }}-packages-${{ hashFiles ('${{ matrix.lambda_function }}/package-lock.json') }}
       - name: install node_modules
         if: ${{ steps.cache-node-modules.outputs.cache-hit != 'true' }}
-        working-directory: ${{ github.workspace }}/${{ matrix.lambda_function }}
+        working-directory: ${{ matrix.lambda_function }}
+        continue-on-error: true
         run: |
-          npm install
-          npm ci
+            npm install
+            npm ci
 
       - name: Zip function
         run: zip -q -r ${{ needs.Lambda-Code.outputs.LAMBDA_TF }}.zip ${{ needs.Lambda-Code.outputs.LAMBDA_TF }} node_modules package.json index.js package-lock.json
