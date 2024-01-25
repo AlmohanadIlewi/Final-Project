@@ -23,108 +23,46 @@ jobs:
           echo "AWS_CONFIG_FILE=$GITHUB_WORKSPACE/.aws/config" >> $GITHUB_ENV
           echo "AWS_SHARED_CREDENTIALS_FILE=$GITHUB_WORKSPACE/.aws/credentials" >> $GITHUB_ENV
 
-  # debugging:
-  #   runs-on: ubuntu-latest
-
-  #   needs: configure-aws
-
-  #   steps:
-  #     - name: Install AWS CLI
-  #       run: |
-  #         sudo apt-get install -y awscli
-
-  #     - name: Decode AWS_CONFIG secret
-  #       run: echo "${{ secrets.AWS_CONFIG }}" | base64 --decode > $GITHUB_WORKSPACE/.aws/credentials
-
-  #     - name: Verify AWS credentials file
-  #       run: test -f $GITHUB_WORKSPACE/.aws/credentials && echo "Credentials file exists" || echo "Credentials file does not exist"
-
-  #     - name: Debugging
-  #       run: |
-  #         env
-  #         ls -R $GITHUB_WORKSPACE
-  #         cat $GITHUB_WORKSPACE/.aws/credentials
-
 
   deploy-lambda:
-    runs-on: ubuntu-latest
+  runs-on: ubuntu-latest
+  needs: [configure-aws]
 
-    needs: [configure-aws]
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: full
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: full
+    - name: Configure AWS CLI
+      run: |
+        echo "AWS_DEFAULT_REGION=eu-central-1" >> $GITHUB_ENV
+        echo "AWS_CONFIG_FILE=$GITHUB_WORKSPACE/.aws/config" >> $GITHUB_ENV
+        echo "AWS_SHARED_CREDENTIALS_FILE=$GITHUB_WORKSPACE/.aws/credentials" >> $GITHUB_ENV
 
-      - name: List AWS profiles
-        run: aws configure list-profiles
+    - name: Zip and Deploy Lambda Functions
+      run: |
+        S3_BUCKET=tf-backend-abschlussprojekt
+        LAMBDA_FUNCTION_DIR=lambda-functions
+        S3_KEY=lambda-function.zip
 
-      - name: List S3 buckets
-        run: aws s3 ls --region eu-central-1
+        for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/*; do
+          if [ -d "$FUNCTION_DIR" ]; then
+            LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
 
-      - name: Print changed files
-        run: |
-          echo "List of changed files:" 
-          echo "$(git diff --name-only HEAD^ HEAD)"
+            # Zip the Lambda function
+            zip -r $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip -C $LAMBDA_FUNCTION_DIR $LAMBDA_FUNCTION_NAME
 
-      - name: Deploy Modified Lambda Functions
-        run: |
-          S3_BUCKET=tf-backend-abschlussprojekt
-          LAMBDA_FUNCTION_DIR=lambda-functions
-          S3_KEY=lambda-function.zip
+            # Upload the zip file to S3
+            aws s3 cp $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY
 
-          for FUNCTION_DIR in $LAMBDA_FUNCTION_DIR/*; do
-            if [ -d "$FUNCTION_DIR" ]; then
-              LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
+            # Update the Lambda function code
+            aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --s3-bucket $S3_BUCKET --s3-key $LAMBDA_FUNCTION_NAME/$S3_KEY
 
-              aws s3 cp s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY $FUNCTION_DIR/existing_lambda.zip
+            # Cleanup
+            rm $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip
+          fi
+        done
 
-              unzip $FUNCTION_DIR/existing_lambda.zip -d $FUNCTION_DIR/lambda_env
+        aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
 
-              for file in $(git diff-tree --no-commit-id --name-only -r HEAD); do
-                if [[ $file == *.py && $file == $FUNCTION_DIR* ]]; then
-                  mkdir -p $FUNCTION_DIR/lambda_env/$(dirname $file)
-                  cp $file $FUNCTION_DIR/lambda_env/$file
-                  echo "Copied $file to $FUNCTION_DIR/lambda_env/$file"
-                  echo "Content of $file after copying:"
-                  cat $FUNCTION_DIR/lambda_env/$file
-                fi
-              done
-
-              cd $FUNCTION_DIR/lambda_env
-              zip -r ../updated_lambda.zip .
-              cd ..
-
-              aws s3 cp $FUNCTION_DIR/updated_lambda.zip s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY
-
-              aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --s3-bucket $S3_BUCKET --s3-key $LAMBDA_FUNCTION_NAME/$S3_KEY
-
-              rm -r $FUNCTION_DIR/lambda_env
-              rm $FUNCTION_DIR/existing_lambda.zip
-              rm $FUNCTION_DIR/updated_lambda.zip
-            fi
-          done
-
-          aws s3 sync ./build s3://tfstate-bucket-abschlussproject/ --delete --acl public-read --region eu-central-1
-
-      - name: Configure Terraform Backend
-        run: |
-          echo "backend \"s3\" {" > backend.tf
-          echo "  bucket = \"tfstate-bucket-abschlussproject\"" >> backend.tf
-          echo "  key    = \"terraform.tfstate\"" >> backend.tf
-          echo "  region = \"eu-central-1\"" >> backend.tf
-          echo "}" >> backend.tf
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.1.0
-
-      - name: Deploy Lambda-Function and Trigger Terraform
-        run: |
-          echo "Triggering Terraform deployment..."
-          terraform init
-          terraform validate
-          terraform plan
-          terraform apply -auto-approve
