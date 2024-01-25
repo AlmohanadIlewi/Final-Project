@@ -44,7 +44,7 @@ jobs:
               LAMBDA_FUNCTION_NAME=$(basename $FUNCTION_DIR)
 
               # Zip the Lambda function
-              zip -r $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip -C $LAMBDA_FUNCTION_DIR $LAMBDA_FUNCTION_NAME
+              (cd $LAMBDA_FUNCTION_DIR && zip -r $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip $LAMBDA_FUNCTION_NAME)
 
               # Upload the zip file to S3
               aws s3 cp $GITHUB_WORKSPACE/$LAMBDA_FUNCTION_NAME.zip s3://$S3_BUCKET/$LAMBDA_FUNCTION_NAME/$S3_KEY
