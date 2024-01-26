@@ -15,12 +15,18 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm install -g aws-cli
+
+      - name: Add execute permissions to lsdirs.sh
+        run: chmod +x ./.github/scripts/lsdirs.sh
 
       - name: Run lsdirs.sh
         run: ./.github/scripts/lsdirs.sh
