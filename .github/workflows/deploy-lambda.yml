@@ -34,9 +34,8 @@ jobs:
         run: chmod +x ./.github/scripts/lsdirs.sh
 
       - name: Run lsdirs.sh and zip Lambda functions
-        run: |
-          ./.github/scripts/lsdirs.sh
-      
+        run: ./.github/scripts/lsdirs.sh
+
       - name: function-zips 
         id: cache-function-zips 
         uses: actions/cache@v4
