@@ -7,7 +7,7 @@ count=0
 
 for dir in $directories; do
     dirs="$dirs\"$(echo "$dir" | sed 's/.\///')\","
-    lambdi="$lambdi\"$count\": $(cat $dir/lambda_def.json), "
+    lambdi="$lambdi\"$count\": \"$(cat $dir/lambda_def.json)\", "
     count=$((count+1))
 done
 
