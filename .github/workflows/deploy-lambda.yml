@@ -37,15 +37,16 @@ jobs:
         run: |
           ./.github/scripts/lsdirs.sh
 
-
-      - name: function-zips
-        id: cache-function-zips
+      - name: Cache function-zips 
+        id: cache-function-zips 
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}
-        run: |
-          cd ${{ github.workspace }}
-          zip -q -r "${{ matrix.lambda_function }}.zip" "${{ matrix.lambda_function }}" package.json index.js package-lock.json
+          key: ${{ matrix.lambda_function }}-zip-${{ hashFiles('${{ matrix.lambda_function }}/index.js', '${{ matrix.lambda_function }}/package-lock.json') }}
+      - name: zip functions
+        id: zip-functions
+        run: | 
+          zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }}  package.json index.js package-lock.json
           echo "packed function ${{ matrix.lambda_function }}"
 
       - name: List ZIP files
@@ -87,7 +88,6 @@ jobs:
 
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile projekt || true
-
 
   cleanup:
     needs: deploy
