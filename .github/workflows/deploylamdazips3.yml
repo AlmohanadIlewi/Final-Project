@@ -75,4 +75,4 @@ jobs:
               run: |
                 S3_BUCKET=cicd-bucket123
                   aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")" --region eu-central-1
-      
+      #
