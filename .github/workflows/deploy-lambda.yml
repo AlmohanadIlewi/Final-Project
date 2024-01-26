@@ -30,6 +30,9 @@ jobs:
 
       - name: Run lsdirs.sh
         run: ./.github/scripts/lsdirs.sh
+        
+      - name: Show content of lambdi.json
+        run: cat lambdi.json
 
       - name: Zip Lambda Functions
         run: |
