@@ -1,4 +1,4 @@
-name: Deploy to S3 Bucket
+name: Deploy Lambda to S3 Bucket
 
 on:
   push:
@@ -71,4 +71,20 @@ jobs:
             aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
           done
 
-      
+      - name: Deploy Lambdi.json to S3
+        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile techstarter || true
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.0
+
+      - name: Deploy Lambda-Function and Trigger Terraform
+        run: |
+          echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
+          echo "Triggering Terraform deployment..."
+          terraform init
+          terraform validate
+          terraform plan
+          terraform apply -auto-approve
