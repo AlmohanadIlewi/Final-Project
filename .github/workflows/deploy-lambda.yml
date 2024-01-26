@@ -58,9 +58,14 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  
-      - name: Show AWS credentials
-        run: cat ~/.aws/config
+      
+
+      - name: Show AWS CLI Config
+        run: cat /home/runner/.aws/config
+
+      - name: Show AWS CLI Version
+        run: aws --version
+    
 
       - name: Upload Lambda ZIPs to S3
         run: |
