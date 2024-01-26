@@ -33,8 +33,10 @@ jobs:
       - name: Add execute permissions to lsdirs.sh
         run: chmod +x ./.github/scripts/lsdirs.sh
 
-      - name: Run lsdirs.sh
-        run: ./.github/scripts/lsdirs.sh
+      - name: Run lsdirs.sh and zip Lambda functions
+        run: |
+          chmod +x ./.github/scripts/lsdirs.sh
+          ./.github/scripts/lsdirs.sh
 
       - name: Show content of lambdi.json
         run: cat lambdi.json
@@ -58,7 +60,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
+
       - name: Show AWS credentials
         run: cat ~/.aws/config
 
@@ -69,5 +71,4 @@ jobs:
             aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
           done
 
-      - name: List S3 Bucket Contents
-        run: aws s3 ls s3://tfstate-bucket-abschlussproject1/
+      
