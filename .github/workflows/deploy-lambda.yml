@@ -6,7 +6,7 @@ on:
       - test-field
 
 jobs:
-  deploy_lambda:
+  prepare:
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Dependencies
         run: npm install -g aws-cli
-        
+
       - name: Install jq
         run: sudo apt-get install jq
       - name: Show jq version
@@ -47,7 +47,15 @@ jobs:
         run: cat lambdi.json
 
       - name: List ZIP files
-        run: find . -type f -name '*.zip'   
+        run: find . -type f -name '*.zip'
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Configure AWS CLI
         run: |
@@ -61,7 +69,6 @@ jobs:
 
       - name: Show AWS credentials
         run: cat ~/.aws/config
-      
 
       - name: Zip lambda-functions directory
         run: zip -r lambda-functions.zip lambda-functions/
@@ -70,15 +77,20 @@ jobs:
         run: |
           S3_BUCKET=tfstate-bucket-abschlussproject
           for file in $(find . -type f -name '*.zip'); do
-          aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")" \
-          --region eu-central-1 \
-          --access-key $AWS_ACCESS_KEY_ID \
-          --secret-key $AWS_SECRET_ACCESS_KEY
+            aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")" \
+              --region eu-central-1 \
+              --access-key $AWS_ACCESS_KEY_ID \
+              --secret-key $AWS_SECRET_ACCESS_KEY
           done
 
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile projekt || true
 
+  cleanup:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
