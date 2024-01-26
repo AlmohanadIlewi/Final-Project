@@ -34,9 +34,7 @@ jobs:
         run: chmod +x ./.github/scripts/lsdirs.sh
 
       - name: Run lsdirs.sh and zip Lambda functions
-        run: |
-          chmod +x ./.github/scripts/lsdirs.sh
-          ./.github/scripts/lsdirs.sh
+        run: ./.github/scripts/lsdirs.sh
 
       - name: Show content of lambdi.json
         run: cat lambdi.json
@@ -68,11 +66,14 @@ jobs:
         run: |
           S3_BUCKET=tfstate-bucket-abschlussproject1
           for file in $(find . -type f -name '*.zip'); do
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set region eu-central-1
             aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
           done
 
       - name: Deploy Lambdi.json to S3
-        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile techstarter || true
+        run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject1/ --delete --acl=public-read --profile techstarter || true
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
@@ -82,7 +83,10 @@ jobs:
       - name: Deploy Lambda-Function and Trigger Terraform
         run: |
           echo "Deploying ${{ matrix.lambda_function }}.zip to S3"
-          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject/${{ matrix.lambda_function }}.zip --acl public-read --region eu-central-1 --profile techstarter
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region eu-central-1
+          aws s3 cp ${{ matrix.lambda_function }}.zip s3://tfstate-bucket-abschlussproject1/${{ matrix.lambda_function }}.zip --acl public-read
           echo "Triggering Terraform deployment..."
           terraform init
           terraform validate
