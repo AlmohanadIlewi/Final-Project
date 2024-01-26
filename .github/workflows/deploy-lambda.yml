@@ -6,29 +6,37 @@ on:
       - test-field
 
 jobs:
-  deploy_source:
+  deploy_lambda:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        node-version: [18]
+        node-version: [14]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      # - name: Install dependencies
-      #   run: |
-      #     cd lambda-functions
-      #     npm install
-      #   env:
-      #     CI: true
+      - name: Install Dependencies
+        run: npm install -g aws-cli
 
+      - name: Execute lsdirs.sh script
+        run: |
+          chmod +x script/lsdirs.sh
+          script/lsdirs.sh
 
+      - name: Create Lambda ZIPs
+        run: |
+          for dir in $(cat lambdi.json | jq -r '.[]'); do
+            (cd "$dir" && zip -r "$dir.zip" .)
+          done
+
+    
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
@@ -41,6 +49,16 @@ jobs:
   
       - name: Show AWS credentials
         run: cat ~/.aws/config
+
+      - name: Upload Lambda ZIPs to S3
+        run: |
+          S3_BUCKET=tfstate-bucket-abschlussproject1
+          for file in $(find . -type f -name '*.zip'); do
+            aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
+          done
+
+
+
 
 
           
