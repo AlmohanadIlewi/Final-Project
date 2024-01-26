@@ -46,9 +46,6 @@ jobs:
             (cd $dir && zip -r "$dir.zip" .)
           done
 
-      - name: List ZIP files
-        run: find . -type f -name '*.zip'   
-
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
@@ -68,6 +65,3 @@ jobs:
           for file in $(find . -type f -name '*.zip'); do
             aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
           done
-
-      - name: List S3 Bucket Contents
-        run: aws s3 ls s3://tfstate-bucket-abschlussproject1/
