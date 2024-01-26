@@ -1,4 +1,4 @@
-name: 'Build and upload to S3 Bucket'
+name: Deploy to S3 Bucket
 
 on:
   push:
@@ -6,58 +6,53 @@ on:
       - test-field
 
 jobs:
-  Build_and_Upload:
-    permissions:
-      actions: write
-      contents: write
+  deploy_source:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: 'Generate Tag Version'
-        id: generate_tag_version
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - name: Install dependencies
         run: |
-          TAG=$(date +%Y%m%d)-$(date +%H%M%S)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Tag Version: $TAG" >> $GITHUB_STEP_SUMMARY
-    
-      - name: 'Create Zip File'
-        id: 'create_package'
-        run: |
-          PACKAGE_NAME="${{ steps.generate_tag_version.outputs.tag }}.zip"
-          echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
-          cd lambda-functions  # Assuming your Lambda functions are in a directory called "lambda-functions"
-          zip -r $GITHUB_WORKSPACE/$PACKAGE_NAME .
-
-      - name: Configure AWS CLI
-        run: |
-          mkdir -p ~/.aws/
-          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
-          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
-          echo "region = eu-central-1" >> ~/.aws/config
+          cd lambda-functions/
+          npm ci
+            npm run build --if-present
         env:
+          CI: true
+      - name: Use Node.js ${{ matrix.node-version }}
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Set AWS credentials
+        uses: aws-actions/configure-aws-credential@v1
+        with:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-central-1
 
-  
       - name: Show AWS credentials
         run: cat ~/.aws/config
 
-      # - name: List S3 buckets
-      #   run: aws s3 ls --region eu-central-1 --profile techstarter
+        
 
+      # - name: Zip
+      #   uses: montudor/action-zip@v0.1.0
+      #   with:
+      #     args: zip -qq -r ./bundle.zip ./
 
-      - name: 'Upload to S3 Bucket'
-        run: aws s3 cp $GITHUB_WORKSPACE/${{ steps.create_package.outputs.package_name }} s3://tfstate-bucket-abschlussproject1/
-
-      - uses: actions/github-script@v6
-        name: 'Create Git Tag'
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.generate_tag_version.outputs.tag }}',
-              sha: context.sha
-            })
+      # - name: Deploy Lambda Functions
+      #   run: |
+      #     cd lambda-functions/
+      #     for FUNCTION_DIR in */; do
+      #       FUNCTION_NAME=$(basename $FUNCTION_DIR)
+      #       echo "Deploying Lambda function: $FUNCTION_NAME"
+            
+      #       # Adjust the following line according to your deployment needs
+      #       aws s3 cp ./bundle.zip s3://tfstate-bucket-abschlussproject1/$FUNCTION_NAME/bundle.zip
+      #       aws lambda update-function-code --function-name $FUNCTION_NAME --s3-bucket tfstate-bucket-abschlussproject1 --s3-key $FUNCTION_NAME/bundle.zip
+      #     done
+          
