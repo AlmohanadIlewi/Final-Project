@@ -81,7 +81,7 @@ jobs:
           --region eu-central-1 \
           --access-key ${{ secrets.AWS_ACCESS_KEY_ID }} \
           --secret-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        done
+          done
 
 
       - name: Deploy Lambdi.json to S3
