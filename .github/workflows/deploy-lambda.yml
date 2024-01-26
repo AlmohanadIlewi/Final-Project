@@ -74,8 +74,8 @@ jobs:
           --region eu-central-1 \
           --access-key $AWS_ACCESS_KEY_ID \
           --secret-key $AWS_SECRET_ACCESS_KEY
-        done
-        
+          done
+
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject1/ --delete --acl=public-read --profile techstarter || true
 
