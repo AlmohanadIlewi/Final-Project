@@ -6,7 +6,7 @@ on:
       - test-field
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,13 +34,14 @@ jobs:
         run: chmod +x ./.github/scripts/lsdirs.sh
 
       - name: Run lsdirs.sh and zip Lambda functions
-        run: ./.github/scripts/lsdirs.sh
+        run: |
+          ./.github/scripts/lsdirs.sh
 
-        # Zip lambda-functions directory
-        lambdi_dirs=$(cat lambdi.json | jq -r '.[]')
-        for dir in $lambdi_dirs; do
-          (cd $dir && zip -r "$dir.zip" .)
-        done
+          # Zip lambda-functions directory
+          lambdi_dirs=$(cat lambdi.json | jq -r '.[]')
+          for dir in $lambdi_dirs; do
+            (cd $dir && zip -r "$dir.zip" .)
+          done
 
       - name: Show content of lambdi.json
         run: cat lambdi.json
@@ -49,7 +50,7 @@ jobs:
         run: find . -type f -name '*.zip'
 
   deploy:
-    needs: build
+    needs: prepare
     runs-on: ubuntu-latest
 
     steps:
@@ -85,24 +86,8 @@ jobs:
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject/ --delete --acl=public-read --profile projekt || true
 
-  test:
+  cleanup:
     needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Run Tests
-        run: npm test
-
-  deploy_terraform:
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
