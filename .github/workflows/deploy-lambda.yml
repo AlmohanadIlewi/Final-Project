@@ -65,16 +65,17 @@ jobs:
 
       - name: Zip lambda-functions directory
         run: zip -r lambda-functions.zip lambda-functions/
-        
+
       - name: Upload Lambda ZIPs to S3
         run: |
           S3_BUCKET=tfstate-bucket-abschlussproject1
           for file in $(find . -type f -name '*.zip'); do
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-            aws configure set region eu-central-1
-            aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
-          done
+          aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")" \
+          --region eu-central-1 \
+          --access-key $AWS_ACCESS_KEY_ID \
+          --secret-key $AWS_SECRET_ACCESS_KEY
+        done
+
 
       - name: Deploy Lambdi.json to S3
         run: aws s3 sync ${{ github.workspace }}/public/ s3://tfstate-bucket-abschlussproject1/ --delete --acl=public-read --profile techstarter || true
