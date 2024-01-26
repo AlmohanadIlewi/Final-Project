@@ -37,16 +37,14 @@ jobs:
         run: |
           ./.github/scripts/lsdirs.sh
 
-      - name: Cache function-zips 
-        id: cache-function-zips 
+      - name: function-zips
+        id: cache-function-zips
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}
-          key: ${{ matrix.lambda_function }}-zip-${{ hashFiles('${{ matrix.lambda_function }}/index.js', '${{ matrix.lambda_function }}/package-lock.json') }}
-      - name: zip functions
-        id: zip-functions
-        run: | 
-          zip -q -r ${{ matrix.lambda_function }}.zip ${{ matrix.lambda_function }}  package.json index.js package-lock.json
+        run: |
+          cd ${{ github.workspace }}
+          zip -q -r "${{ matrix.lambda_function }}.zip" "${{ matrix.lambda_function }}" package.json index.js package-lock.json
           echo "packed function ${{ matrix.lambda_function }}"
 
       - name: List ZIP files
