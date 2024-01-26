@@ -24,13 +24,18 @@ jobs:
 
       - name: Install Dependencies
         run: npm install -g aws-cli
+        
+      - name: Install jq
+        run: sudo apt-get install jq
+      - name: Show jq version
+        run: jq --version
 
       - name: Add execute permissions to lsdirs.sh
         run: chmod +x ./.github/scripts/lsdirs.sh
 
       - name: Run lsdirs.sh
         run: ./.github/scripts/lsdirs.sh
-        
+
       - name: Show content of lambdi.json
         run: cat lambdi.json
 
