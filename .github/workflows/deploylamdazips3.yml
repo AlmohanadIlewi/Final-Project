@@ -81,5 +81,5 @@ jobs:
       - name: Upload Lambda ZIPs to S3
         run: |
           cat ~/.aws/config
-          S3_BUCKET=lambdafuns3
+          S3_BUCKET=lambdafunb
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
