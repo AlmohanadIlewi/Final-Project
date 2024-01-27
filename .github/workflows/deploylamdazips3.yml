@@ -74,6 +74,10 @@ jobs:
           name: ${{ matrix.lambda-function }}
 
 
+      - name: Debug Environment Variables
+        run: env
+
+
       - name: Upload Lambda ZIPs to S3
         run: |
           cat ~/.aws/config
