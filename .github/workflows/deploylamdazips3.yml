@@ -42,7 +42,6 @@ jobs:
 
       - name: Print ZIP contents
         run: unzip -l lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
-
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -55,7 +54,6 @@ jobs:
     strategy:
       matrix:
         lambda-function: [addComment, addPost, deleteCommentByID, deletePostByID, fetch-google-login, getAllPosts, getCommentsByPostID, getLikeUserRealName, getPostsByID, Like, login-google, UpdateUser]
-
     steps:
       - name: Configure AWS CLI
         run: |
@@ -82,4 +80,4 @@ jobs:
         run: |
           cat ~/.aws/config
           S3_BUCKET=lambdafunb
-          aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
+          aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1 --profile techstarter
