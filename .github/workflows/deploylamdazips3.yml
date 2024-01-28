@@ -65,7 +65,7 @@ jobs:
               node-version: 18
 
           - name: Install Dependencies
-            run: npm install -g aws-cli
+            run: npm ci
 
           # - name: Install jq
           #   run: sudo apt-get install jq
