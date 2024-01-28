@@ -67,21 +67,18 @@ jobs:
           - name: Install Dependencies
             run: npm install -g aws-cli
 
-          - name: Install jq
-            run: sudo apt-get install jq
-
-          - name: Add execute permissions to lsdirs.sh
-            run: chmod +x ./.github/scripts/lsdirs.sh
+          # - name: Install jq
+          #   run: sudo apt-get install jq
 
           - name: Run lsdirs.sh and print contents
             run: |
-              ./.github/scripts/lsdirs.sh
               ls -R
 
           - name: Zip Lambda function
             run: |
               cd ${{ matrix.lambda-function }}
-              zip -r "${{ matrix.lambda-function }}.zip" index.js package.json package-lock.json
+              echo $(pwd)
+              zip -r "${{ matrix.lambda-function }}.zip" node_modules index.js package.json package-lock.json
 
           - name: Print ZIP contents
             run: unzip -l ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
