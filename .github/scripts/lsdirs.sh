@@ -7,7 +7,7 @@ lambdi="{"
 count=0
 
 for dir in $directories; do
-    dirs="$dirs\"$(echo "$dir" | sed 's/.\///')\","
+    dirs="$dirs\"$(echo "$dir" | sed 's/.\/lambda-functions//')\","
     lambdi="$lambdi\"$count\": $(cat $dir/lambda_def.json), "
     count=$((count+1))
 done
