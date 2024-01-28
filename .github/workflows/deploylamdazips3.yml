@@ -73,10 +73,10 @@ jobs:
         with:
           name: ${{ matrix.lambda-function }}
 
-      - name: Debug Environment Variables
-        run: env
-
       - name: Upload Lambda ZIPs to S3
         run: |
           S3_BUCKET=lambdafunb
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
