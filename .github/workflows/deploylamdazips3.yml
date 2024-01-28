@@ -66,14 +66,6 @@ jobs:
           echo "region = eu-central-1" >> ~/.aws/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
-
-      - name: Check AWS CLI version and credentials
-        run: |
-          aws --version
-          aws configure list
 
 
       - name: Test AWS CLI authentication
