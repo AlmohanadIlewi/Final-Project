@@ -74,7 +74,8 @@ jobs:
           - name: Zip Lambda function
             run: |
               cd ${{ matrix.lambda-function }}
-              run: npm i
+              npm i
+              ls
               echo $(pwd)
               zip -r "${{ matrix.lambda-function }}.zip" node_modules index.js package.json package-lock.json
 
