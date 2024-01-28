@@ -77,7 +77,8 @@ jobs:
               npm i
               ls
               echo $(pwd)
-              zip -r "${{ matrix.lambda-function }}.zip" node_modules index.js package.json package-lock.json
+              zip -r -q "${{ matrix.lambda-function }}.zip" node_modules index.js package.json package-lock.json
+              ls
 
           - name: Print ZIP contents
             run: unzip -l ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
