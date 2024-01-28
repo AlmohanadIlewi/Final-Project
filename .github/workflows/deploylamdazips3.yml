@@ -55,35 +55,16 @@ jobs:
       matrix:
         lambda-function: [addComment, addPost, deleteCommentByID, deletePostByID, fetch-google-login, getAllPosts, getCommentsByPostID, getLikeUserRealName, getPostsByID, Like, login-google, UpdateUser]
     steps:
-      # - name: Configure AWS CLI
-      #   run: |
-      #     mkdir -p ~/.aws/
-      #     echo "[techstarter]" > ~/.aws/config
-      #     echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
-      #     echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
-      #     echo "region = eu-central-1" >> ~/.aws/config
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
-
       - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws/
           echo "[profile techstarter]" > ~/.aws/config
-          echo "sso_start_url = https://techstarter.awsapps.com/start#" >> ~/.aws/config
-          echo "sso_region = eu-central-1" >> ~/.aws/config
-          echo "sso_account_id = 622445140057" >> ~/.aws/config
-          echo "sso_role_name = Student" >> ~/.aws/config
-          echo "" >> ~/.aws/config
-          echo "[techstarter]" >> ~/.aws/config
+          echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
+          echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
           echo "region = eu-central-1" >> ~/.aws/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
 
       - name: Artifact2
         uses: actions/download-artifact@v4
@@ -98,4 +79,4 @@ jobs:
         run: |
           cat ~/.aws/config
           S3_BUCKET=lambdafunb
-          aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1 --profile techstarter
+          aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1 --profile profile techstarter
