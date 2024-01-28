@@ -45,7 +45,7 @@ jobs:
           run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
           # trigger Matrix-Job Build-and-Zip-Lambdas
         - name: Deploy Lambdi.json to S3
-          run: aws s3 sync ${{ github.workspace }}/public/ s3://lambdafunb-s3/ --delete --acl=public-read || true
+          run: aws s3 cp ${{ github.workspace }}/public/ s3://lambdafunb-s3/ --delete --acl=public-read || true
           # Job: Deploy-Lambdas (Deploy)
 
     build:
@@ -81,7 +81,7 @@ jobs:
           - name: Zip Lambda function
             run: |
               cd ${{ matrix.lambda-function }}
-              zip -r "${{ matrix.lambda-function }}.zip" index.js lambda_def.json package.json package-lock.json
+              zip -r "${{ matrix.lambda-function }}.zip" index.js package.json package-lock.json
 
           - name: Print ZIP contents
             run: unzip -l ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
