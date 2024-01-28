@@ -73,16 +73,17 @@ jobs:
               npm i
               ls
               echo $(pwd)
-              zip -r -v ${{ matrix.lambda-function }}.zip node_modules index.js package.json package-lock.json
+              zip -r -q ${{ matrix.lambda-function }}.zip node_modules index.js package.json package-lock.json
               ls
 
           - name: Print ZIP contents
-            run: unzip -l ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+            run: unzip -l ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+
           - name: Artifact
             uses: actions/upload-artifact@v4
             with:
               name: ${{ matrix.lambda-function }}
-              path: ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+              path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
     deploy:
         needs: build
