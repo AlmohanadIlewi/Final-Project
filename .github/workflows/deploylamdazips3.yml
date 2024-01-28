@@ -64,9 +64,6 @@ jobs:
             with:
               node-version: 18
 
-          - name: Install Dependencies
-            run: npm ci
-
           # - name: Install jq
           #   run: sudo apt-get install jq
 
@@ -77,6 +74,7 @@ jobs:
           - name: Zip Lambda function
             run: |
               cd ${{ matrix.lambda-function }}
+              run: npm i
               echo $(pwd)
               zip -r "${{ matrix.lambda-function }}.zip" node_modules index.js package.json package-lock.json
 
