@@ -35,6 +35,7 @@ jobs:
           ./.github/scripts/lsdirs.sh
           ls -R
 
+
       - name: Zip Lambda function
         run: |
           cd lambda-functions/${{ matrix.lambda-function }}
