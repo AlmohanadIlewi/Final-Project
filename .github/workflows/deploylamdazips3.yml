@@ -64,6 +64,7 @@ jobs:
           echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
           echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
           echo "region = eu-central-1" >> ~/.aws/config
+          echo "# s3_bucket = lambdafunb" >> ~/.aws/config
           echo "s3 =
             signature_version = s3v4" >> ~/.aws/config
         env:
