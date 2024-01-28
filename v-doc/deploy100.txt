@@ -1,0 +1,74 @@
+name: Deploy to S3 Bucket
+
+on:
+  push:
+    branches:
+      - test-field
+
+jobs:
+  deploy_lambda:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm install -g aws-cli
+        
+      - name: Install jq
+        run: sudo apt-get install jq
+      - name: Show jq version
+        run: jq --version
+
+      - name: Add execute permissions to lsdirs.sh
+        run: chmod +x ./.github/scripts/lsdirs.sh
+
+      - name: Run lsdirs.sh and zip Lambda functions
+        run: |
+          chmod +x ./.github/scripts/lsdirs.sh
+          ./.github/scripts/lsdirs.sh
+
+      - name: Show content of lambdi.json
+        run: cat lambdi.json
+
+      - name: Zip Lambda Functions
+        run: |
+          lambdi_dirs=$(cat lambdi.json | jq -r '.[]')
+          for dir in $lambdi_dirs; do
+            (cd $dir && zip -r "$dir.zip" .)
+          done
+
+      - name: List ZIP files
+        run: find . -type f -name '*.zip'   
+
+      - name: Configure AWS CLI
+        run: |
+          mkdir -p ~/.aws/
+          echo "AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
+          echo "AWS_SECRET_ACCESS_KEY = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
+          echo "AWS_REGION = eu-central-1" >> ~/.aws/config
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Show AWS credentials
+        run: cat ~/.aws/config
+
+      - name: Upload Lambda ZIPs to S3
+        run: |
+          S3_BUCKET=tfstate-bucket-abschlussproject1
+          for file in $(find . -type f -name '*.zip'); do
+            aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")"
+          done
+
+      

@@ -1,0 +1,81 @@
+name: Deploy Lambda Functions to S3
+
+on:
+  push:
+    branches:
+      - test-field
+
+jobs:
+        build:
+          runs-on: ubuntu-latest
+          strategy:
+            matrix:
+              lambda-function: [addComment, addPost, deleteCommentByID, deletePostByID, fetch-google-login, getAllPosts, getCommentsByPostID, getLikeUserRealName, getPostsByID, Like, login-google, UpdateUser]
+      
+          steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v2
+      
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                node-version: 18
+      
+            - name: Install Dependencies
+              run: npm install -g aws-cli
+      
+            - name: Install jq
+              run: sudo apt-get install jq
+      
+            - name: Add execute permissions to lsdirs.sh
+              run: chmod +x ./.github/scripts/lsdirs.sh
+      
+            - name: Run lsdirs.sh and print contents
+              run: |
+                ./.github/scripts/lsdirs.sh
+                ls -R
+      
+            - name: Zip Lambda function
+              run: |
+                cd lambda-functions/${{ matrix.lambda-function }}
+                zip -r "${{ matrix.lambda-function }}.zip" index.js lambda_def.json package.json package-lock.json
+      
+            - name: Print ZIP contents
+              run: unzip -l lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+            - name : Artifact 
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ matrix.lambda-function }}
+                path: lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip 
+      
+        deploy:
+          needs: build
+          runs-on: ubuntu-latest
+          strategy:
+            matrix:
+              lambda-function: [addComment, addPost, deleteCommentByID, deletePostByID, fetch-google-login, getAllPosts, getCommentsByPostID, getLikeUserRealName, getPostsByID, Like, login-google, UpdateUser]
+      
+          steps:
+            - name: Configure AWS CLI
+              run: |
+                mkdir -p ~/.aws/
+                echo "AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID" >> ~/.aws/config
+                echo "AWS_SECRET_ACCESS_KEY = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
+                echo "AWS_REGION = eu-central-1" >> ~/.aws/config
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Artifact2
+              uses: actions/download-artifact@v4
+              with:
+                  name: ${{ matrix.lambda-function }}
+      
+            - name: Upload Lambda ZIPs to S3
+              run: |
+                cat ~/.aws/config
+                S3_BUCKET=cicd-bucket123
+
+                  aws s3 cp  ${{ matrix.lambda-function }}.zip  "s3://$S3_BUCKET/" --region eu-central-1
+                  aws s3 cp "$file" "s3://$S3_BUCKET/$(basename "$file")" --region eu-central-1
+      
