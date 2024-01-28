@@ -42,6 +42,7 @@ jobs:
 
       - name: Print ZIP contents
         run: unzip -l lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -63,15 +64,13 @@ jobs:
           echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/config
           echo "region = eu-central-1" >> ~/.aws/config
         env:
-          AWS_AC CESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
 
       - name: Artifact2
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.lambda-function }}
-
 
       - name: Debug Environment Variables
         run: env
@@ -81,4 +80,3 @@ jobs:
           cat ~/.aws/config
           S3_BUCKET=lambdafunb
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
-          
