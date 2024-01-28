@@ -45,7 +45,7 @@ jobs:
           run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
           # trigger Matrix-Job Build-and-Zip-Lambdas
         - name: Deploy Lambdi.json to S3
-          run: aws s3 cp ${{ github.workspace }}/public/ s3://lambdafunb-s3/ --delete --acl=public-read || true
+          run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://lambdafunb-s3/ 
           # Job: Deploy-Lambdas (Deploy)
 
     build:
