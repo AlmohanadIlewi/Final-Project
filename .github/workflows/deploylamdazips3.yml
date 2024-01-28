@@ -54,6 +54,7 @@ jobs:
       matrix:
         lambda-function: [addComment, addPost, deleteCommentByID, deletePostByID, fetch-google-login, getAllPosts, getCommentsByPostID, getLikeUserRealName, getPostsByID, Like, login-google, UpdateUser]
 
+
     steps:
       - name: Configure AWS CLI
         run: |
