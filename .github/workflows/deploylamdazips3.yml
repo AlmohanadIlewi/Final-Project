@@ -86,7 +86,9 @@ jobs:
               path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
     deploy:
-        needs: build
+        needs:
+          - build
+          - Lambda-Code-Or-Function
         runs-on: ubuntu-latest
         strategy:
           matrix:
