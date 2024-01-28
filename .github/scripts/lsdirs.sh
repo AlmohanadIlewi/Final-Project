@@ -1,18 +1,57 @@
 #!/bin/bash
-
-directories=$(find ./* -type d -prune)
+# ohne Params, gibt es eine Liste von allen Verzeichnissen aus dem aktuellen Verzeichnis aus.
+# Erstellt ein JSON-Objekt mit allen Lambda-Definitionen
+directories=$(find ./lambda-functions/* -type d -prune)
+dirs="["
 lambdi="{"
 count=0
 
 for dir in $directories; do
-    lambdi="$lambdi\"$count\": \"$(cat $dir/lambda_def.json)\", "
+    dirs="$dirs\"$(echo "$dir" | sed 's/.\/lambda-functions\///')\","
+    lambdi="$lambdi\"$count\": $(cat $dir/lambda_def.json), "
     count=$((count+1))
 done
 
+dirs="${dirs::-1}]"
 lambdi="${lambdi::-2}}"
-echo "$lambdi" > lambdi.json
 
-echo "Lambda metadata created in lambdi.json"
+echo "$lambdi" > lambdi.json
+echo "$dirs"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ #!/bin/bash
+
+# directories=$(find ./lambda-functions/* -type d -prune)
+# lambdi="{"
+# count=0
+
+# for dir in $directories; do
+#     lambdi="$lambdi\"$count\": \"$(cat $dir/lambda_def.json)\", "
+#     count=$((count+1))
+# done
+
+# lambdi="${lambdi::-2}}"
+# echo "$lambdi" > lambdi.json
+
+# echo "Lambda metadata created in lambdi.json"
+# echo ""
 
 
 
