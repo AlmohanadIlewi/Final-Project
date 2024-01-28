@@ -69,7 +69,7 @@ jobs:
 
           - name: Zip Lambda function
             run: |
-              cd ${{ matrix.lambda-function }}
+              cd ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}
               npm i
               ls
               echo $(pwd)
