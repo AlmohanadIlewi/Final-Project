@@ -76,5 +76,3 @@ jobs:
         run: |
           S3_BUCKET=lambdafunb
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
-        env:
-          super_secret: ${{ secrets.AWS_CONFIG }}
