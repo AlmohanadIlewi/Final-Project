@@ -80,16 +80,16 @@ jobs:
 
           - name: Zip Lambda function
             run: |
-              cd lambda-functions/${{ matrix.lambda-function }}
+              cd ${{ matrix.lambda-function }}
               zip -r "${{ matrix.lambda-function }}.zip" index.js lambda_def.json package.json package-lock.json
 
           - name: Print ZIP contents
-            run: unzip -l lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+            run: unzip -l ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
           - name: Artifact
             uses: actions/upload-artifact@v4
             with:
               name: ${{ matrix.lambda-function }}
-              path: lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+              path: ${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
     deploy:
         needs: build
