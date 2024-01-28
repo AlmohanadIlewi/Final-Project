@@ -1,6 +1,6 @@
 #!/bin/bash
 
-directories=$(find ./* -type d -prune)
+directories=$(find ./lambda-functions/* -type d -prune)
 lambdi="{"
 count=0
 
