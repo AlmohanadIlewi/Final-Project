@@ -8,7 +8,7 @@ on:
 
 # Jobs:
 jobs:
-  Lambda-Code-Or-Function:       # ... (Schritte für Lambda-Code-Or-Function)
+  Collect-Lambda-Functions:       # ... (Schritte für Collect-Lambda-Functions)
     runs-on: ubuntu-latest
     outputs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
@@ -31,7 +31,8 @@ jobs:
 
       - name: Load new repository state
         uses: actions/checkout@v4
-
+      
+      # Lambda-Funktionen auflisten:
       - name: List Lambda Functions
         working-directory: ${{ github.workspace }}
         id: list-functions
@@ -48,20 +49,21 @@ jobs:
       - name: Result list-functions
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # Trigger Matrix-Job Build-and-Zip-Lambdas
-
+      
+      # Job: Deploy-Lambdas (Deploy)
       - name: Deploy Lambdi.json to S3
-        run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://lambdafunb-s3/ 
-        # Job: Deploy-Lambdas (Deploy)
+        run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://mohanadtestcicd/ 
+        
 
   build:
-    needs: Lambda-Code-Or-Function
+    needs: Collect-Lambda-Functions
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda-function: ${{ fromJson(needs.Collect-Lambda-Functions.outputs.LAMBDA_TF) }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository        # Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -81,20 +83,22 @@ jobs:
       - name: Print ZIP contents
         run: unzip -l ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
+      # Artifact erstellen und hochladen
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.lambda-function }}
           path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
+# Deployment-Job
   deploy:
     needs:
       - build
-      - Lambda-Code-Or-Function    # ... (Schritte für den Deployment-Job)    
+      - Collect-Lambda-Functions    # ... (Schritte für den Deployment-Job)    
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda-function: ${{ fromJson(needs.Collect-Lambda-Functions.outputs.LAMBDA_TF) }}
 
     steps:  # Konfiguration der AWS CLI:
       - name: Configure AWS CLI
@@ -121,7 +125,7 @@ jobs:
       - name: Upload Lambda ZIPs to S3
         run: |
           cat ~/.aws/config
-          S3_BUCKET=lambdafunb-s3
+          S3_BUCKET=mohanadtestcicd
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
 
         env:
