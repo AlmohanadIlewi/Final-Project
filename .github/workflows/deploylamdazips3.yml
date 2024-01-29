@@ -56,7 +56,7 @@ jobs:
         
 
   build:
-    needs: Lambda-Code-Or-Function
+    needs: Collect-Lambda-Functions
     runs-on: ubuntu-latest
     strategy:
       matrix:
