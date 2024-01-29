@@ -1,0 +1,127 @@
+# name: Deploy Lambda Functions to S3
+
+# on:
+#   push:
+#     branches:
+#       - test-field
+
+# jobs:
+#     Lambda-Code-Or-Function:
+#       runs-on: ubuntu-latest
+#       outputs:
+#         LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
+#       steps:
+#         - name: Configure AWS CLI
+#           run: |
+#               mkdir -p ~/.aws/
+#               echo "[default]" >> ~/.aws/config
+#               echo "region = eu-central-1" >> ~/.aws/config
+#               echo "output = json" >> ~/.aws/config
+#               echo "[default]" >> ~/.aws/credentials
+#               echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+#               echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+#               echo "aws_session_token = $AWS_SESSION_TOKEN" >> ~/.aws/credentials
+
+#           env:
+#               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#               AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+#         - name: Lade neuen Repo-Zustand
+#           uses: actions/checkout@v4
+#         - name: List Lambda Functions
+#           working-directory: ${{ github.workspace }}
+#           id: list-functions
+#           run: |
+#             cd ${{ github.workspace }}
+#             echo "LAMBDA_TF=$(bash ./.github/scripts/lsdirs.sh)" >> $GITHUB_OUTPUT
+#             echo "LAMBDI.JSON FILE Created:"
+#             cat lambdi.json
+
+#         - name: Check lambdi.json existence
+#           run: |
+#             echo "lambdi.json exists: $(ls -l lambdi.json)"
+
+#         - name: result list-functions
+#           run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
+#           # trigger Matrix-Job Build-and-Zip-Lambdas
+#         - name: Deploy Lambdi.json to S3
+#           run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://lambdafunb-s3/ 
+#           # Job: Deploy-Lambdas (Deploy)
+
+#     build:
+#         needs: Lambda-Code-Or-Function
+#         runs-on: ubuntu-latest
+#         strategy:
+#           matrix:
+#             lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+
+#         steps:
+#           - name: Checkout Repository
+#             uses: actions/checkout@v4
+
+#           - name: Setup Node.js
+#             uses: actions/setup-node@v3
+#             with:
+#               node-version: 18
+
+#           # - name: Install jq
+#           #   run: sudo apt-get install jq
+
+#           - name: Zip Lambda function
+#             run: |
+#               cd ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}
+#               npm i
+#               ls
+#               echo $(pwd)
+#               zip -r -q ${{ matrix.lambda-function }}.zip node_modules index.js package.json package-lock.json
+#               ls
+
+#           - name: Print ZIP contents
+#             run: unzip -l ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+
+#           - name: Artifact
+#             uses: actions/upload-artifact@v4
+#             with:
+#               name: ${{ matrix.lambda-function }}
+#               path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
+
+#     deploy:
+#         needs:
+#           - build
+#           - Lambda-Code-Or-Function
+#         runs-on: ubuntu-latest
+#         strategy:
+#           matrix:
+#               lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+#         steps:
+#           - name: Configure AWS CLI
+#             run: |
+#               mkdir -p ~/.aws/
+#               echo "[default]" >> ~/.aws/config
+#               echo "region = eu-central-1" >> ~/.aws/config
+#               echo "output = json" >> ~/.aws/config
+#               echo "[default]" >> ~/.aws/credentials
+#               echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
+#               echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+#               echo "aws_session_token = $AWS_SESSION_TOKEN" >> ~/.aws/credentials
+
+#             env:
+#               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#               AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+#           - name: Artifact2
+#             uses: actions/download-artifact@v4
+#             with:
+#               name: ${{ matrix.lambda-function }}
+
+#           - name: Upload Lambda ZIPs to S3
+#             run: |
+#               cat ~/.aws/config
+#               S3_BUCKET=lambdafunb-s3
+#                 aws s3 cp  ${{ matrix.lambda-function }}.zip  "s3://$S3_BUCKET/" --region eu-central-1
+
+#             env:
+#               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#               AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+#               AWS_REGION: eu-central-1
