@@ -31,7 +31,8 @@ jobs:
 
       - name: Load new repository state
         uses: actions/checkout@v4
-
+      
+      # Lambda-Funktionen auflisten:
       - name: List Lambda Functions
         working-directory: ${{ github.workspace }}
         id: list-functions
@@ -48,10 +49,11 @@ jobs:
       - name: Result list-functions
         run: echo "${{ steps.list-functions.outputs.LAMBDA_TF }}"
         # Trigger Matrix-Job Build-and-Zip-Lambdas
-
+      
+      # Job: Deploy-Lambdas (Deploy)
       - name: Deploy Lambdi.json to S3
         run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://lambdafunb-s3/ 
-        # Job: Deploy-Lambdas (Deploy)
+        
 
   build:
     needs: Lambda-Code-Or-Function
@@ -61,7 +63,7 @@ jobs:
         lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository        # Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -81,12 +83,14 @@ jobs:
       - name: Print ZIP contents
         run: unzip -l ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
 
+      # Artifact erstellen und hochladen
       - name: Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.lambda-function }}
           path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
-
+          
+# Deployment-Job
   deploy:
     needs:
       - build
