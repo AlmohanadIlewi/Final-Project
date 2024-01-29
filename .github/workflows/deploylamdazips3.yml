@@ -8,7 +8,7 @@ on:
 
 # Jobs:
 jobs:
-  Lambda-Code-Or-Function:       # ... (Schritte für Lambda-Code-Or-Function)
+  Collect-Lambda-Functions:       # ... (Schritte für Collect-Lambda-Functions)
     runs-on: ubuntu-latest
     outputs:
       LAMBDA_TF: ${{ steps.list-functions.outputs.LAMBDA_TF }}
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda-function: ${{ fromJson(needs.Collect-Lambda-Functions.outputs.LAMBDA_TF) }}
 
     steps:
       - name: Checkout Repository        # Checkout Repository
@@ -89,7 +89,7 @@ jobs:
         with:
           name: ${{ matrix.lambda-function }}
           path: ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
-          
+
 # Deployment-Job
   deploy:
     needs:
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda-function: ${{ fromJson(needs.Lambda-Code-Or-Function.outputs.LAMBDA_TF) }}
+        lambda-function: ${{ fromJson(needs.Collect-Lambda-Functions.outputs.LAMBDA_TF) }}
 
     steps:  # Konfiguration der AWS CLI:
       - name: Configure AWS CLI
