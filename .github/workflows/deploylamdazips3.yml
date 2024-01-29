@@ -94,7 +94,7 @@ jobs:
   deploy:
     needs:
       - build
-      - Lambda-Code-Or-Function    # ... (Schritte für den Deployment-Job)    
+      - Collect-Lambda-Functions    # ... (Schritte für den Deployment-Job)    
     runs-on: ubuntu-latest
     strategy:
       matrix:
