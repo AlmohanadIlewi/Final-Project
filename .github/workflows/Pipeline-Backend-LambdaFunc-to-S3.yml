@@ -76,7 +76,7 @@ jobs:
           cd ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}
           npm i
           zip -r -q ${{ matrix.lambda-function }}.zip node_modules index.js package.json package-lock.json
-          ls
+          
 
       - name: Print ZIP contents
         run: unzip -l ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}/${{ matrix.lambda-function }}.zip
