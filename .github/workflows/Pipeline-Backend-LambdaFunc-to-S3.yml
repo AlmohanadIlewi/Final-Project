@@ -52,7 +52,7 @@ jobs:
       
       # Job: Deploy-Lambdas (Deploy)
       - name: Deploy Lambdi.json to S3
-        run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://lambdafuncs-s3-mohanad/ 
+        run: aws s3 cp ${{ github.workspace }}/lambdi.json s3://backend-lambdafun-s3/ 
         
 
   build:
@@ -75,8 +75,6 @@ jobs:
         run: |
           cd ${{ github.workspace }}/lambda-functions/${{ matrix.lambda-function }}
           npm i
-          ls
-          echo $(pwd)
           zip -r -q ${{ matrix.lambda-function }}.zip node_modules index.js package.json package-lock.json
           ls
 
@@ -125,7 +123,7 @@ jobs:
       - name: Upload Lambda ZIPs to S3
         run: |
           cat ~/.aws/config
-          S3_BUCKET=lambdafuncs-s3-mohanad
+          S3_BUCKET=backend-lambdafun-s3
           aws s3 cp ${{ matrix.lambda-function }}.zip "s3://$S3_BUCKET/" --region eu-central-1
 
         env:
